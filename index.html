@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>供应链决策架构设计 · 数据、决策与 AI</title>
+<meta content="供应链决策架构设计：首页先展示 10 类业务数据与网络，再展示 D1–D8 决策关系，并接入 AI Event、KPI 与 Scenario 页面。" name="description"/>
+<style>
+
+:root{
+  --ink:#171719;
+  --ink-2:#36363b;
+  --muted:#72727a;
+  --paper:#f7f4ee;
+  --paper-2:#fcfbf8;
+  --line:rgba(37,37,42,.12);
+  --glass:rgba(255,255,255,.66);
+  --blue:#4d79ff;
+  --violet:#8b6cff;
+  --rose:#f08f9d;
+  --peach:#f2b978;
+  --mint:#73bda7;
+  --sage:#9fba91;
+  --max:1180px;
+  --shadow:0 24px 70px rgba(45,40,35,.10);
+  --spring:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 14% 10%, rgba(240,143,157,.11), transparent 28%),
+    radial-gradient(circle at 88% 22%, rgba(77,121,255,.10), transparent 30%),
+    var(--paper-2);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","PingFang SC",
+              "Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.5;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:999;
+  opacity:.20;
+  mix-blend-mode:multiply;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(69,61,50,.022) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, rgba(69,61,50,.012) 0 1px, transparent 1px 6px);
+}
+a{color:inherit;text-decoration:none}
+.wrap{width:min(var(--max),calc(100% - 48px));margin:auto}
+
+/* Navigation */
+.nav{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  z-index:80;
+  height:56px;
+  background:rgba(250,248,243,.72);
+  -webkit-backdrop-filter:saturate(150%) blur(22px);
+  backdrop-filter:saturate(150%) blur(22px);
+  border-bottom:1px solid rgba(35,35,38,.08);
+}
+.nav-inner{
+  width:min(var(--max),calc(100% - 48px));
+  height:100%;
+  margin:auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.brand{font-size:14px;font-weight:680;letter-spacing:-.015em}
+.nav-links{display:flex;gap:28px;font-size:12px;color:var(--muted)}
+.nav-links a{transition:color .18s ease,transform .18s ease}
+.nav-links a:hover{color:var(--ink);transform:translateY(-1px)}
+
+/* Hero: image/animation first, copy floats above it */
+.hero{
+  min-height:100svh;
+  padding:78px 0 28px;
+  display:flex;
+  align-items:stretch;
+}
+.hero-stage{
+  position:relative;
+  width:min(1440px,calc(100% - 28px));
+  min-height:calc(100svh - 106px);
+  margin:auto;
+  overflow:hidden;
+  border-radius:36px;
+  background:
+    radial-gradient(circle at 20% 16%, rgba(242,185,120,.55), transparent 24%),
+    radial-gradient(circle at 77% 17%, rgba(139,108,255,.34), transparent 29%),
+    radial-gradient(circle at 72% 76%, rgba(115,189,167,.35), transparent 31%),
+    radial-gradient(circle at 22% 81%, rgba(240,143,157,.38), transparent 30%),
+    linear-gradient(135deg,#f7e8ca 0%,#f6e4e4 30%,#e6e8f8 64%,#e0eee8 100%);
+  box-shadow:0 40px 110px rgba(72,62,50,.17), inset 0 1px rgba(255,255,255,.72);
+  isolation:isolate;
+}
+.hero-stage::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  opacity:.34;
+  background:
+    repeating-linear-gradient(8deg, rgba(62,55,47,.075) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(98deg, rgba(255,255,255,.25) 0 1px, transparent 1px 9px);
+  -webkit-mask-image:linear-gradient(to bottom,#000,rgba(0,0,0,.35));
+  mask-image:linear-gradient(to bottom,#000,rgba(0,0,0,.35));
+}
+.hero-stage::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:2;
+  background:linear-gradient(to top,rgba(248,245,238,.92) 0%,rgba(248,245,238,.34) 38%,transparent 66%);
+  pointer-events:none;
+}
+.supply-art{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  width:100%;
+  height:100%;
+  transform:scale(1.04);
+  transform-origin:center;
+  transition:transform .5s var(--spring);
+}
+.hero-stage:hover .supply-art{transform:scale(1.055)}
+.supply-art .route{
+  fill:none;
+  stroke:rgba(43,47,61,.42);
+  stroke-width:2.2;
+  stroke-linecap:round;
+  stroke-dasharray:7 12;
+  animation:routeFlow 5.5s linear infinite;
+}
+.supply-art .route.soft{
+  stroke:rgba(255,255,255,.75);
+  stroke-width:1.4;
+  animation-duration:7s;
+}
+.supply-art .sketch{
+  fill:none;
+  stroke:rgba(47,43,39,.28);
+  stroke-width:1.35;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.supply-art .node-halo{
+  fill:rgba(255,255,255,.26);
+  stroke:rgba(255,255,255,.72);
+  stroke-width:1.2;
+  filter:url(#softShadow);
+}
+.supply-art .node-core{fill:rgba(32,33,39,.84)}
+.supply-art .pulse{
+  fill:none;
+  stroke:rgba(255,255,255,.95);
+  stroke-width:1.5;
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:pulse 3.2s ease-out infinite;
+}
+.supply-art text{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC",sans-serif;
+  fill:rgba(31,31,35,.72);
+  font-size:14px;
+  font-weight:650;
+  letter-spacing:.01em;
+}
+.hero-copy{
+  position:absolute;
+  left:clamp(30px,6vw,92px);
+  right:clamp(30px,6vw,92px);
+  bottom:clamp(34px,7vh,76px);
+  z-index:3;
+  display:grid;
+  grid-template-columns:minmax(0,1.2fr) minmax(280px,.72fr);
+  align-items:end;
+  gap:56px;
+}
+.hero-copy .kicker{
+  margin-bottom:14px;
+  font-size:13px;
+  font-weight:720;
+  color:rgba(39,39,44,.63);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.hero-copy h1{
+  margin:0;
+  max-width:900px;
+  font-size:clamp(43px,6vw,82px);
+  line-height:.99;
+  letter-spacing:-.055em;
+  font-weight:730;
+  text-wrap:balance;
+}
+.hero-copy p{
+  margin:0 0 4px;
+  max-width:440px;
+  color:rgba(48,48,54,.68);
+  font-size:16px;
+  line-height:1.75;
+}
+.hero-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-top:22px;
+  padding:8px 12px;
+  border:1px solid rgba(35,35,39,.11);
+  border-radius:999px;
+  background:rgba(255,255,255,.38);
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+  font-size:12px;
+  color:rgba(45,45,50,.69);
+}
+.hero-chip::before{
+  content:"";
+  width:6px;height:6px;border-radius:50%;
+  background:var(--mint);
+  box-shadow:0 0 0 5px rgba(115,189,167,.13);
+}
+
+@keyframes routeFlow{to{stroke-dashoffset:-76}}
+@keyframes pulse{
+  0%{transform:scale(.72);opacity:.85}
+  75%,100%{transform:scale(1.85);opacity:0}
+}
+
+/* Sections */
+.section{padding:112px 0;position:relative}
+.section.soft{
+  background:
+    radial-gradient(circle at 84% 18%, rgba(139,108,255,.07), transparent 28%),
+    radial-gradient(circle at 8% 82%, rgba(242,185,120,.10), transparent 31%),
+    rgba(245,242,235,.58);
+  border-top:1px solid rgba(52,49,45,.06);
+  border-bottom:1px solid rgba(52,49,45,.06);
+}
+.section-top{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  margin-bottom:48px;
+}
+.section-top > div:first-child{min-width:0}
+.eyebrow{
+  margin-bottom:10px;
+  font-size:12px;
+  font-weight:720;
+  color:var(--muted);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+h2{
+  margin:0;
+  font-size:clamp(31px,4.25vw,54px);
+  line-height:1.05;
+  letter-spacing:-.045em;
+  font-weight:710;
+}
+.section-top h2{white-space:nowrap}
+.section-top p{
+  margin:0;
+  max-width:800px;
+  color:var(--muted);
+  font-size:16px;
+  line-height:1.78;
+}
+
+/* Overview */
+.overview-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+.overview-card{
+  position:relative;
+  min-height:235px;
+  overflow:hidden;
+  border:1px solid rgba(50,50,55,.09);
+  border-radius:28px;
+  background:rgba(255,255,255,.58);
+  -webkit-backdrop-filter:blur(18px);
+  backdrop-filter:blur(18px);
+  padding:26px;
+  box-shadow:0 10px 35px rgba(55,48,41,.045);
+  transition:transform .28s var(--spring),box-shadow .28s var(--spring),border-color .2s ease;
+}
+.overview-card::after{
+  content:"";
+  position:absolute;
+  width:170px;height:170px;border-radius:50%;
+  right:-64px;bottom:-82px;
+  background:var(--wash,rgba(77,121,255,.15));
+  filter:blur(2px);
+  transition:transform .45s var(--spring);
+}
+.overview-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 24px 60px rgba(55,48,41,.09);
+  border-color:rgba(50,50,55,.14);
+}
+.overview-card:hover::after{transform:scale(1.12)}
+.overview-card:nth-child(1){--wash:rgba(115,189,167,.27)}
+.overview-card:nth-child(2){--wash:rgba(139,108,255,.20)}
+.overview-card:nth-child(3){--wash:rgba(240,143,157,.23)}
+.overview-card .n{
+  font-size:12px;
+  font-weight:700;
+  color:var(--muted);
+  margin-bottom:74px;
+}
+.overview-card h3{
+  position:relative;z-index:1;
+  margin:0 0 8px;
+  font-size:20px;
+  line-height:1.2;
+  letter-spacing:-.025em;
+  white-space:nowrap;
+}
+.overview-card p{
+  position:relative;z-index:1;
+  margin:0;
+  max-width:92%;
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.65;
+}
+
+/* Shared diagram surfaces */
+.diagram-shell,.world-main{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(49,48,47,.08);
+  border-radius:32px;
+  background:rgba(255,255,255,.72)!important;
+  -webkit-backdrop-filter:blur(16px);
+  backdrop-filter:blur(16px);
+  box-shadow:var(--shadow);
+}
+.diagram-shell{padding:34px}
+.world{display:grid;grid-template-columns:1fr;gap:16px}
+.world-main{padding:30px}
+.diagram-shell::before,.world-main::before{
+  content:"";
+  position:absolute;inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 8% 10%, rgba(242,185,120,.09), transparent 25%),
+    radial-gradient(circle at 88% 80%, rgba(77,121,255,.07), transparent 29%);
+}
+.diagram-note{
+  position:relative;
+  display:flex;
+  justify-content:space-between;
+  gap:30px;
+  margin-top:24px;
+  padding:0 5px;
+  color:var(--muted);
+  font-size:13px;
+}
+.diagram-note strong{color:var(--ink);font-weight:650}
+
+/* World model */
+.world-flow{
+  position:relative;
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:10px;
+  align-items:center;
+}
+.data-node{
+  position:relative;
+  min-height:118px;
+  border:1px solid rgba(52,52,56,.09);
+  border-radius:20px;
+  padding:16px;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.82),rgba(248,247,243,.62));
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  transition:transform .24s var(--spring),box-shadow .24s var(--spring),border-color .2s ease;
+}
+.data-node:hover{
+  transform:translateY(-4px);
+  border-color:rgba(77,121,255,.18);
+  box-shadow:0 16px 38px rgba(47,45,40,.08);
+}
+.data-node .id{font-size:11px;color:#9a9aa1;font-weight:700}
+.data-node b{font-size:15px;line-height:1.35;white-space:nowrap}
+.data-node span{color:var(--muted);font-size:11px}
+.arrow-cell{
+  color:#a2a2a8;
+  text-align:center;
+  font-size:20px;
+  animation:nudge 2.8s ease-in-out infinite;
+}
+@keyframes nudge{50%{transform:translateX(3px)}}
+.world-branch{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin:14px 0 0;
+}
+.constraint{
+  border-radius:20px;
+  padding:20px 22px;
+  display:grid;
+  grid-template-columns:190px 1fr;
+  gap:22px;
+  align-items:center;
+  background:rgba(255,255,255,.66);
+}
+.constraint b{font-size:14px;white-space:nowrap}
+.constraint p{margin:0;color:var(--muted);font-size:13px}
+.constraint.risk{border:1px solid rgba(240,143,157,.32)}
+.constraint.finance{border:1px solid rgba(242,185,120,.42)}
+
+/* Decision SVG */
+.decision-svg{width:100%;height:auto;display:block;overflow:visible;position:relative}
+.decision-link{cursor:pointer;outline:none}
+.decision-link .node-card{
+  fill:rgba(255,255,255,.92);
+  stroke:rgba(63,63,69,.18);
+  stroke-width:1.25;
+  vector-effect:non-scaling-stroke;
+  transition:fill .16s ease,stroke .16s ease,filter .2s ease;
+}
+.decision-link:hover .node-card,.decision-link:focus .node-card{
+  fill:#fff;
+  stroke:rgba(77,121,255,.58);
+  filter:drop-shadow(0 8px 12px rgba(42,49,78,.10));
+}
+.decision-link .node-code{font-size:12px;font-weight:700;letter-spacing:.05em;fill:#737379}
+.decision-link .node-name{font-size:18px;font-weight:650;fill:#1d1d1f}
+.decision-link .node-sub{font-size:12px;fill:#86868b}
+.decision-link .node-open{font-size:11px;fill:#8a8a8f}
+.decision-link:hover .node-open,.decision-link:focus .node-open{fill:var(--blue)}
+.input-node rect{fill:#f4f1ea;stroke:rgba(63,63,69,.17);stroke-width:1.25;vector-effect:non-scaling-stroke}
+.input-node .input-title{fill:#505056;font-size:13px;font-weight:650}
+.input-node .input-sub{fill:#86868b;font-size:11px}
+.decision-flow{
+  fill:none;stroke:#aaa9ad;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision
+}
+.decision-flow.main{stroke:#707076;stroke-width:1.8}
+.decision-flow.feedback{stroke:#b1b1b6;stroke-dasharray:5 6}
+.edge-label{
+  font-size:11px;fill:#7d7d83;paint-order:stroke;stroke:#faf9f6;stroke-width:5px;stroke-linejoin:round
+}
+.edge-label.small{font-size:10.5px}
+
+/* AI */
+.ai-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+.ai-item{
+  position:relative;
+  display:block;
+  min-height:300px;
+  overflow:hidden;
+  padding:28px;
+  border:1px solid rgba(50,50,55,.09);
+  border-radius:26px;
+  background:rgba(255,255,255,.64);
+  box-shadow:0 10px 34px rgba(55,48,41,.045);
+  transition:transform .28s var(--spring),box-shadow .28s var(--spring),border-color .2s ease;
+}
+.ai-item::before{
+  content:"";
+  position:absolute;
+  width:180px;height:180px;border-radius:50%;
+  top:-100px;right:-70px;
+  background:var(--aiwash,rgba(77,121,255,.14));
+  filter:blur(4px);
+}
+.ai-item:nth-child(1){--aiwash:rgba(240,143,157,.28)}
+.ai-item:nth-child(2){--aiwash:rgba(77,121,255,.20)}
+.ai-item:nth-child(3){--aiwash:rgba(115,189,167,.25)}
+.ai-item:hover{
+  transform:translateY(-6px);
+  box-shadow:0 24px 60px rgba(55,48,41,.09);
+  border-color:rgba(50,50,55,.14);
+}
+.ai-item .num{font-size:12px;color:var(--muted);margin-bottom:68px;font-weight:700}
+.ai-item h3{margin:0 0 12px;font-size:21px;letter-spacing:-.025em;white-space:nowrap}
+.ai-item p{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.65}
+.mini-flow{font-size:12px;line-height:1.7;color:#424245}
+.future{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-top:20px;
+  color:var(--ink);
+  font-size:13px;
+  font-weight:650;
+}
+.future::after{content:"↗";transition:transform .2s var(--spring)}
+.ai-item:hover .future::after{transform:translate(2px,-2px)}
+
+/* Footer */
+.footer{
+  padding:58px 0 70px;
+  color:#86868b;
+  font-size:12px;
+  border-top:1px solid var(--line);
+}
+.footer-inner{display:flex;justify-content:space-between;gap:30px}
+
+/* Accessibility + responsive */
+@media(max-width:900px){
+  .hero-copy{grid-template-columns:1fr;gap:20px}
+  .hero-copy p{max-width:640px}
+  .overview-grid{grid-template-columns:1fr}
+  .overview-card{min-height:190px}
+  .overview-card .n{margin-bottom:48px}
+  .world-flow{grid-template-columns:1fr}
+  .arrow-cell{transform:rotate(90deg);animation:none}
+  .world-branch{grid-template-columns:1fr}
+  .constraint{grid-template-columns:1fr;gap:8px}
+  .ai-grid{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .wrap,.nav-inner{width:min(var(--max),calc(100% - 28px))}
+  .nav-links{display:none}
+  .hero{padding:68px 0 14px}
+  .hero-stage{width:calc(100% - 14px);min-height:calc(100svh - 82px);border-radius:26px}
+  .hero-copy{left:22px;right:22px;bottom:28px}
+  .hero-copy h1{font-size:clamp(38px,12.5vw,58px)}
+  .hero-copy p{font-size:14px;line-height:1.65}
+  .supply-art{transform:scale(1.28) translateY(-5%)}
+  .section{padding:78px 0}
+  .section-top h2{font-size:clamp(27px,7.6vw,36px);letter-spacing:-.04em}
+  .overview-card h3{font-size:18px}
+  .diagram-shell{padding:14px;border-radius:22px}
+  .diagram-note{display:block}
+  .diagram-note span{display:block;margin-top:8px}
+  .world-main{padding:16px;border-radius:22px}
+  .footer-inner{display:block}
+  .footer-inner div + div{margin-top:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+
+</style>
+</head>
+<body>
+<header class="nav">
+<div class="nav-inner">
+<a class="brand" href="#top">供应链决策架构设计</a>
+<nav class="nav-links"><a href="#world">10 类数据</a><a href="#decisions">D1–D8 决策</a><a href="#ai">AI 辅助</a></nav>
+</div>
+</header>
+<main id="top">
+<section class="hero">
+<div class="hero-stage" id="heroStage">
+<svg aria-label="供应链网络动态示意" class="supply-art" role="img" viewbox="0 0 1400 820">
+<defs>
+<filter height="160%" id="softShadow" width="160%" x="-30%" y="-30%">
+<fedropshadow dx="0" dy="10" flood-color="#51493f" flood-opacity=".12" stddeviation="12"></fedropshadow>
+</filter>
+<filter height="120%" id="pencilNoise" width="120%" x="-10%" y="-10%">
+<feturbulence basefrequency=".8" numoctaves="2" result="noise" seed="8" type="fractalNoise"></feturbulence>
+<fecolormatrix in="noise" result="mono" type="saturate" values="0"></fecolormatrix>
+<feblend in="SourceGraphic" in2="mono" mode="soft-light"></feblend>
+</filter>
+</defs>
+<g filter="url(#pencilNoise)" opacity=".82">
+<path class="sketch" d="M70 170 C210 78 344 98 460 180 S700 293 826 198 1100 82 1320 188"></path>
+<path class="sketch" d="M104 642 C247 538 385 556 496 624 S729 752 858 650 1111 529 1310 626"></path>
+<path class="sketch" d="M164 384 C286 274 420 286 554 372 S822 485 956 382 1187 291 1296 354"></path>
+<path class="sketch" d="M338 104 C302 233 339 358 438 466 S556 676 495 778"></path>
+<path class="sketch" d="M1049 95 C1002 218 1035 352 1140 446 S1224 654 1178 770"></path>
+</g>
+<path class="route" d="M157 390 C275 267 421 280 547 377 S800 482 941 392 1169 286 1260 354"></path>
+<path class="route soft" d="M155 389 C241 510 376 571 526 617 S834 711 995 637 1165 514 1260 354"></path>
+<path class="route soft" d="M547 377 C630 269 756 207 890 204 S1146 237 1260 354"></path>
+<g transform="translate(157 390)">
+<circle class="pulse" r="29"></circle>
+<circle class="node-halo" r="35"></circle>
+<circle class="node-core" r="7"></circle>
+<text x="-18" y="-52">Market</text>
+</g>
+<g transform="translate(547 377)">
+<circle class="pulse" r="29" style="animation-delay:.7s"></circle>
+<circle class="node-halo" r="35"></circle>
+<circle class="node-core" r="7"></circle>
+<text x="-31" y="-52">Factory</text>
+</g>
+<g transform="translate(890 204)">
+<circle class="pulse" r="29" style="animation-delay:1.4s"></circle>
+<circle class="node-halo" r="35"></circle>
+<circle class="node-core" r="7"></circle>
+<text x="-31" y="-52">Supplier</text>
+</g>
+<g transform="translate(995 637)">
+<circle class="pulse" r="29" style="animation-delay:2.1s"></circle>
+<circle class="node-halo" r="35"></circle>
+<circle class="node-core" r="7"></circle>
+<text x="-42" y="61">Inventory</text>
+</g>
+<g transform="translate(1260 354)">
+<circle class="pulse" r="29" style="animation-delay:2.8s"></circle>
+<circle class="node-halo" r="35"></circle>
+<circle class="node-core" r="7"></circle>
+<text x="-34" y="-52">Customer</text>
+</g>
+<g opacity=".46">
+<circle cx="361" cy="315" fill="#29292e" r="4"></circle>
+<circle cx="715" cy="306" fill="#29292e" r="4"></circle>
+<circle cx="783" cy="507" fill="#29292e" r="4"></circle>
+<circle cx="1110" cy="460" fill="#29292e" r="4"></circle>
+</g>
+</svg>
+<div class="hero-copy">
+<div>
+<div class="kicker">Supply Chain Decision Architecture</div>
+<h1>从业务世界，走向供应链决策。</h1>
+<div class="hero-chip">10 类业务数据 → D1–D8 决策 → AI 辅助</div>
+</div>
+<p>
+        先用 10 类业务数据刻画市场、产品、供应、产能、库存、物流、风险与财务，
+        再把状态转化为 D1–D8 的可执行决策；AI 位于确定性计算之外，负责事件、诊断与场景分析。
+      </p>
+</div>
+</div>
+</section>
+<section class="section soft">
+<div class="wrap">
+<div class="section-top">
+<div>
+<div class="eyebrow">项目结构</div>
+<h2>三个板块，一套完整闭环。</h2>
+</div>
+<p>
+  首页先建立供应链的业务世界：10 类数据与网络；随后展示 D1–D8 如何把业务状态转化为决策；
+  最后进入 AI 事件解析、KPI 异常诊断与 Scenario 分析。
+</p>
+</div>
+<div class="overview-grid"><a class="overview-card" href="#world">
+<div class="n">01</div>
+<h3>供应链网络与 10 类业务数据</h3>
+<p>用 10 类业务数据记录需求、产品、供应、产能、库存、物流、风险与财务状态。</p>
+</a><a class="overview-card" href="#decisions">
+<div class="n">02</div>
+<h3>D1–D8 决策</h3>
+<p>将业务状态转化为需求承诺、采购、生产、库存、物流和履约计划。</p>
+</a><a class="overview-card" href="#ai">
+<div class="n">03</div>
+<h3>AI 辅助</h3>
+<p>处理外部事件、KPI 异常诊断和 What-if 场景，不替代底层规则与算法。</p>
+</a></div>
+</div>
+</section>
+<section class="section soft" id="world">
+<div class="wrap">
+<div class="section-top">
+<div>
+<div class="eyebrow">01 · 业务数据与网络</div>
+<h2>10 类数据共同描述同一个供应链。</h2>
+</div>
+<p>
+        数据不是十张彼此独立的表。市场产生需求，产品与 BOM 定义需求结构，
+        供应商和采购关系提供供给，工厂与物流完成生产和移动，库存连接计划与履约；
+        风险合规与财务横向约束这些活动。
+      </p>
+</div>
+<div class="world">
+<div class="world-main">
+<div class="world-flow">
+<a class="data-node" href="data.html" aria-label="打开市场 / 客户数据页">
+<div class="id">01</div>
+<b>市场 / 客户</b>
+<span>Market / Customer</span>
+</a>
+<div class="arrow-cell">→</div>
+<a class="data-node" href="data.html" aria-label="打开需求 / 订单数据页">
+<div class="id">02</div>
+<b>需求 / 订单</b>
+<span>Demand / Order</span>
+</a>
+<div class="arrow-cell">→</div>
+<a class="data-node" href="data.html" aria-label="打开产品 / BOM 数据页">
+<div class="id">03</div>
+<b>产品 / BOM</b>
+<span>Product / BOM</span>
+</a>
+<div class="arrow-cell">→</div>
+<a class="data-node" href="data.html" aria-label="打开供应商数据页">
+<div class="id">05</div>
+<b>供应商</b>
+<span>Supplier / Site</span>
+</a>
+</div>
+<div style="height:10px"></div>
+<div class="world-flow">
+<a class="data-node" href="data.html" aria-label="打开库存数据页">
+<div class="id">04</div>
+<b>库存</b>
+<span>Inventory</span>
+</a>
+<div class="arrow-cell">←</div>
+<a class="data-node" href="data.html" aria-label="打开物流网络数据页">
+<div class="id">08</div>
+<b>物流网络</b>
+<span>Logistics</span>
+</a>
+<div class="arrow-cell">←</div>
+<a class="data-node" href="data.html" aria-label="打开工厂 / 产能数据页">
+<div class="id">07</div>
+<b>工厂 / 产能</b>
+<span>Facility / Capacity</span>
+</a>
+<div class="arrow-cell">←</div>
+<a class="data-node" href="data.html" aria-label="打开采购关系数据页">
+<div class="id">06</div>
+<b>采购关系</b>
+<span>Sourcing / Procurement</span>
+</a>
+</div>
+<div class="world-branch">
+<a class="constraint risk" href="data.html" aria-label="打开 Risk / Compliance 数据页">
+<b>09 · Risk / Compliance</b>
+<p>约束 Product / BOM、Supplier / Site、Procurement、Facility / Capacity 与 Logistics。</p>
+</a>
+<a class="constraint finance" href="data.html" aria-label="打开 Finance 数据页">
+<b>10 · Finance</b>
+<p>约束 Procurement、Capacity、Inventory 与 Logistics，并汇总成本、收入、现金和回报。</p>
+</a>
+</div>
+</div>
+</div>
+</div>
+</section><section class="section" id="decisions">
+<div class="wrap">
+<div class="section-top">
+<div>
+<div class="eyebrow">02 · D1–D8</div>
+<h2>决策之间不是一条简单的直线。</h2>
+</div>
+<p>
+        主链从需求承诺一直到履约，但物料需求、产能、采购 Lead Time、库存和物流之间还存在交叉影响。
+        点击任一 D 节点，后续进入对应的详细页面。
+      </p>
+</div>
+<div class="diagram-shell decision-network-shell" style="background:#f5f5f7;">
+<svg aria-label="D1-D8 决策关系图" class="decision-svg" role="img" viewbox="0 0 1120 920">
+<defs>
+<marker id="decisionArrow" markerheight="8" markerwidth="8" orient="auto" refx="6.4" refy="3.5">
+<path d="M0,0 L7,3.5 L0,7 Z" fill="#a4a4aa"></path>
+</marker>
+<marker id="decisionArrowDark" markerheight="8" markerwidth="8" orient="auto" refx="6.4" refy="3.5">
+<path d="M0,0 L7,3.5 L0,7 Z" fill="#707076"></path>
+</marker>
+<marker id="decisionArrowBack" markerheight="8" markerwidth="8" orient="auto" refx="0.6" refy="3.5">
+<path d="M7,0 L0,3.5 L7,7 Z" fill="#a4a4aa"></path>
+</marker>
+</defs>
+<!-- connections: placed first so every line stays behind the nodes -->
+<g aria-hidden="true">
+<!-- Forecast → D1 → D2 -->
+<path class="decision-flow main" d="M560 84 V110" marker-end="url(#decisionArrowDark)"></path>
+<path class="decision-flow main" d="M560 192 V230" marker-end="url(#decisionArrowDark)"></path>
+<!-- D2 → D3 : material requirement -->
+<path class="decision-flow" d="M500 312 V350 H290 V390" marker-end="url(#decisionArrow)"></path>
+<text class="edge-label" x="348" y="342">物料需求</text>
+<!-- D2 → D5 : capacity requirement -->
+<path class="decision-flow" d="M680 271 H730 V520" marker-end="url(#decisionArrow)"></path>
+<text class="edge-label" x="744" y="401">产能需求</text>
+<!-- D3 → D4 -->
+<path class="decision-flow main" d="M290 472 V520" marker-end="url(#decisionArrowDark)"></path>
+<text class="edge-label" x="306" y="500">合格供应源</text>
+<!-- D4 → D5 -->
+<path class="decision-flow main" d="M410 561 H610" marker-end="url(#decisionArrowDark)"></path>
+<text class="edge-label" x="462" y="548">物料供应</text>
+<!-- D4 → D6 -->
+<path class="decision-flow" d="M290 602 V640 H500 V670" marker-end="url(#decisionArrow)"></path>
+<text class="edge-label small" x="325" y="631">Lead Time / MOQ / Lot Size</text>
+<!-- D5 → D6 -->
+<path class="decision-flow main" d="M730 602 V640 H620 V670" marker-end="url(#decisionArrowDark)"></path>
+<!-- D6 ↔ D7 -->
+<path class="decision-flow" d="M680 711 H780" marker-end="url(#decisionArrow)" marker-start="url(#decisionArrowBack)"></path>
+<text class="edge-label" x="701" y="697">库存 ↔ 物流</text>
+<!-- D6 → D8 -->
+<path class="decision-flow main" d="M560 752 V810" marker-end="url(#decisionArrowDark)"></path>
+<text class="edge-label" x="576" y="786">Available Inventory</text>
+<!-- D7 → D8 -->
+<path class="decision-flow" d="M890 752 V785 H680 V810" marker-end="url(#decisionArrow)"></path>
+<text class="edge-label" x="737" y="775">运输计划 / ETA</text>
+<!-- D8 → Forecast feedback -->
+<path class="decision-flow feedback" d="M440 851 H90 V52 H460" marker-end="url(#decisionArrow)"></path>
+<text class="edge-label" x="126" y="42">Actual / Fulfillment Feedback</text>
+</g>
+<!-- D0 / Forecast input -->
+<g class="input-node">
+<rect height="64" rx="17" ry="17" width="200" x="460" y="20"></rect>
+<text class="input-title" text-anchor="middle" x="560" y="47">D0 · Forecast</text>
+<text class="input-sub" text-anchor="middle" x="560" y="66">需求预测 · 共同信息源</text>
+</g>
+<!-- D1 -->
+<a aria-label="打开 D1 需求承诺详情页" class="decision-link" href="decisions/d1.html">
+<g>
+<rect class="node-card" height="82" rx="18" ry="18" width="240" x="440" y="110"></rect>
+<text class="node-code" x="466" y="137">D1</text>
+<text class="node-name" x="466" y="163">需求承诺</text>
+<text class="node-sub" x="466" y="182">定“卖多少”</text>
+<text class="node-open" text-anchor="end" x="654" y="137">详情 ↗</text>
+</g>
+</a>
+<!-- D2 -->
+<a aria-label="打开 D2 需求拆解详情页" class="decision-link" href="decisions/d2.html">
+<g>
+<rect class="node-card" height="82" rx="18" ry="18" width="240" x="440" y="230"></rect>
+<text class="node-code" x="466" y="257">D2</text>
+<text class="node-name" x="466" y="283">需求拆解</text>
+<text class="node-sub" x="466" y="302">拆“需要什么”</text>
+<text class="node-open" text-anchor="end" x="654" y="257">详情 ↗</text>
+</g>
+</a>
+<!-- D3 -->
+<a aria-label="打开 D3 供应源准入详情页" class="decision-link" href="decisions/d3.html">
+<g>
+<rect class="node-card" height="82" rx="18" ry="18" width="240" x="170" y="390"></rect>
+<text class="node-code" x="196" y="417">D3</text>
+<text class="node-name" x="196" y="443">供应源准入</text>
+<text class="node-sub" x="196" y="462">定“谁能做”</text>
+<text class="node-open" text-anchor="end" x="384" y="417">详情 ↗</text>
+</g>
+</a>
+<!-- D4 -->
+<a aria-label="打开 D4 采购与供应分配详情页" class="decision-link" href="decisions/d4.html">
+<g>
+<rect class="node-card" height="82" rx="18" ry="18" width="240" x="170" y="520"></rect>
+<text class="node-code" x="196" y="547">D4</text>
+<text class="node-name" x="196" y="573">采购与供应分配</text>
+<text class="node-sub" x="196" y="592">定“向谁买”</text>
+<text class="node-open" text-anchor="end" x="384" y="547">详情 ↗</text>
+</g>
+</a>
+<!-- D5 -->
+<a aria-label="打开 D5 生产分配详情页" class="decision-link" href="decisions/d5.html">
+<g>
+<rect class="node-card" height="82" rx="18" ry="18" width="240" x="610" y="520"></rect>
+<text class="node-code" x="636" y="547">D5</text>
+<text class="node-name" x="636" y="573">生产分配</text>
+<text class="node-sub" x="636" y="592">定“在哪做”</text>
+<text class="node-open" text-anchor="end" x="824" y="547">详情 ↗</text>
+</g>
+</a>
+<!-- D6 -->
+<a aria-label="打开 D6 库存规划详情页" class="decision-link" href="decisions/d6.html">
+<g>
+<rect class="node-card" height="82" rx="18" ry="18" width="240" x="440" y="670"></rect>
+<text class="node-code" x="466" y="697">D6</text>
+<text class="node-name" x="466" y="723">库存规划</text>
+<text class="node-sub" x="466" y="742">定“放多少”</text>
+<text class="node-open" text-anchor="end" x="654" y="697">详情 ↗</text>
+</g>
+</a>
+<!-- D7 -->
+<a aria-label="打开 D7 物流规划详情页" class="decision-link" href="decisions/d7.html">
+<g>
+<rect class="node-card" height="82" rx="18" ry="18" width="220" x="780" y="670"></rect>
+<text class="node-code" x="806" y="697">D7</text>
+<text class="node-name" x="806" y="723">物流规划</text>
+<text class="node-sub" x="806" y="742">定“怎么运”</text>
+<text class="node-open" text-anchor="end" x="974" y="697">详情 ↗</text>
+</g>
+</a>
+<!-- D8 -->
+<a aria-label="打开 D8 履约分配详情页" class="decision-link" href="decisions/d8.html">
+<g>
+<rect class="node-card" height="82" rx="18" ry="18" width="240" x="440" y="810"></rect>
+<text class="node-code" x="466" y="837">D8</text>
+<text class="node-name" x="466" y="863">履约分配</text>
+<text class="node-sub" x="466" y="882">定“给谁”</text>
+<text class="node-open" text-anchor="end" x="654" y="837">详情 ↗</text>
+</g>
+</a>
+</svg>
+<div class="diagram-note">
+<strong>D1 定卖多少 → D2 拆需要什么；D2 同时向 D3 / D5 传递物料与产能需求，再由采购、生产、库存、物流和履约形成闭环。</strong>
+<span>8 个节点已保留详情页接口：decisions/d1.html ～ decisions/d8.html。</span>
+</div>
+</div>
+</div>
+
+</section>
+
+<section class="section" id="ai">
+<div class="wrap">
+<div class="section-top">
+<div>
+<div class="eyebrow">03 · AI 辅助</div>
+<h2>把不确定性，放在确定性计算之外。</h2>
+</div>
+<p>三个 AI 模块均已接入独立页面：事件解析、KPI 异常诊断与 Scenario 分析；首页作为入口，不改动底层确定性规则与算法。</p>
+</div>
+<div class="ai-grid">
+<a aria-label="进入 Event 页面" class="ai-item" href="AI/event.html">
+<div class="num">01</div>
+<h3>事件解析</h3>
+<p>把政策、制裁、火灾、停运等外部事件转换为可审核的数据变更。</p>
+<div class="mini-flow">Event → Entity / State / Logic → Change Set → Human Review → Selective Recalculation</div>
+<span class="future">进入 Event 页面</span>
+</a>
+<a aria-label="进入 KPI 页面" class="ai-item" href="AI/kpi.html">
+<div class="num">02</div>
+<h3>KPI 异常诊断</h3>
+<p>读取确定性计算得到的 KPI 和中间指标，判断偏差可能来自哪个业务环节。</p>
+<div class="mini-flow">KPI Exception → Root Cause → Query / Compute → Related Decision</div>
+<span class="future">进入 KPI 页面</span>
+</a>
+<a aria-label="进入 Scenario 页面" class="ai-item" href="AI/scenario.html">
+<div class="num">03</div>
+<h3>Scenario 分析</h3>
+<p>针对临时 What-if 问题调用 D1–D8 中相关算法，再比较方案并解释结果。</p>
+<div class="mini-flow">What-if → Run D4 / D5 / D6 / D7 → Compare → Explain</div>
+<span class="future">进入 Scenario 页面</span>
+</a>
+</div>
+</div>
+</section>
+<footer class="footer">
+<div class="wrap footer-inner">
+<div>供应链决策架构设计</div>
+<div>项目主页 · 中文版本</div>
+</div>
+</footer>
+</main>
+
+
+
+
+<script>
+(() => {
+  const stage = document.getElementById('heroStage');
+  const art = stage?.querySelector('.supply-art');
+  if (!stage || !art || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+  const render = () => {
+    cx += (tx - cx) * .08;
+    cy += (ty - cy) * .08;
+    art.style.translate = `${cx}px ${cy}px`;
+    if (Math.abs(tx-cx) + Math.abs(ty-cy) > .05) raf = requestAnimationFrame(render);
+    else raf = 0;
+  };
+  stage.addEventListener('pointermove', (e) => {
+    const r = stage.getBoundingClientRect();
+    tx = ((e.clientX - r.left) / r.width - .5) * 12;
+    ty = ((e.clientY - r.top) / r.height - .5) * 8;
+    if (!raf) raf = requestAnimationFrame(render);
+  });
+  stage.addEventListener('pointerleave', () => {
+    tx = 0; ty = 0;
+    if (!raf) raf = requestAnimationFrame(render);
+  });
+})();
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"45c2bf8136a245cd97f1c2e9a96c0730"}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"45c2bf8136a245cd97f1c2e9a96c0730"}' crossorigin="anonymous"></script>
+</body>
+</html>

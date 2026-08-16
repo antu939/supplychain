@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10 类供应链业务数据｜供应链决策架构设计</title>
+<meta name="description" content="供应链决策架构中的 10 类业务数据：每类包含若干业务表或业务对象，用于描述市场、需求、产品、库存、供应、产能、物流、风险与财务状态。">
+<style>
+:root{
+  --text:#1d1d1f;
+  --muted:#6e6e73;
+  --light:#f5f5f7;
+  --line:#d2d2d7;
+  --line2:#e8e8ed;
+  --blue:#0066cc;
+  --max:1120px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  color:var(--text);
+  background:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC",
+              "Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.5;
+}
+a{color:inherit;text-decoration:none}
+.nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  height:50px;
+  background:rgba(255,255,255,.88);
+  backdrop-filter:saturate(180%) blur(18px);
+  border-bottom:1px solid rgba(0,0,0,.08);
+}
+.nav-inner{
+  width:min(var(--max),calc(100% - 40px));
+  height:100%;
+  margin:auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.brand{font-size:14px;font-weight:600}
+.nav-links{display:flex;gap:24px;font-size:12px;color:var(--muted)}
+.nav-links a:hover{color:var(--text)}
+.wrap{width:min(var(--max),calc(100% - 40px));margin:auto}
+.hero{padding:96px 0 84px}
+.kicker{font-size:14px;font-weight:600;color:var(--muted);margin-bottom:14px}
+.hero h1{
+  max-width:880px;
+  margin:0 0 24px;
+  font-size:clamp(42px,5.3vw,66px);
+  line-height:1.08;
+  letter-spacing:-.045em;
+  font-weight:700;
+}
+.hero p{
+  max-width:790px;
+  margin:0;
+  color:var(--muted);
+  font-size:19px;
+  line-height:1.7;
+  letter-spacing:-.01em;
+}
+.hero-note{
+  margin-top:30px;
+  display:inline-block;
+  padding:11px 15px;
+  border-radius:999px;
+  background:var(--light);
+  color:#4d4d52;
+  font-size:13px;
+}
+.section{padding:86px 0}
+.section.soft{background:var(--light)}
+.section-top{
+  display:grid;
+  grid-template-columns:1fr .9fr;
+  gap:70px;
+  align-items:end;
+  margin-bottom:42px;
+}
+.eyebrow{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:12px}
+h2{
+  margin:0;
+  font-size:clamp(31px,3.7vw,46px);
+  line-height:1.12;
+  letter-spacing:-.035em;
+}
+.section-top p{margin:0;color:var(--muted);font-size:15px;line-height:1.75}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.flow-item{
+  min-height:112px;
+  background:#fff;
+  border:1px solid var(--line2);
+  border-radius:18px;
+  padding:17px;
+}
+.flow-item .id{font-size:11px;color:#9a9aa0;margin-bottom:24px}
+.flow-item b{display:block;font-size:15px;margin-bottom:4px}
+.flow-item span{color:var(--muted);font-size:11px}
+.constraint-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.constraint{
+  border-radius:18px;
+  background:#fff;
+  border:1px solid var(--line2);
+  padding:19px;
+  font-size:13px;
+  color:var(--muted);
+}
+.constraint b{display:block;color:var(--text);margin-bottom:6px}
+.data-list{border-top:1px solid var(--line)}
+.data-item{
+  display:grid;
+  grid-template-columns:120px 1.05fr 1.25fr 1.15fr;
+  gap:26px;
+  padding:32px 0;
+  border-bottom:1px solid var(--line);
+  align-items:start;
+}
+.data-no{font-size:12px;color:var(--muted);padding-top:4px}
+.data-name h3{margin:0 0 5px;font-size:21px;letter-spacing:-.02em}
+.data-name p{margin:0;color:var(--muted);font-size:12px}
+.col-label{
+  display:block;
+  margin-bottom:10px;
+  font-size:11px;
+  font-weight:650;
+  color:#8a8a90;
+  letter-spacing:.04em;
+}
+.data-item ul{margin:0;padding-left:18px;color:#47474c;font-size:13px;line-height:1.75}
+.data-item li+li{margin-top:3px}
+.note{
+  margin-top:34px;
+  padding:22px 24px;
+  border-radius:20px;
+  background:#fff;
+  border:1px solid var(--line2);
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.75;
+}
+.note strong{color:var(--text)}
+.footer{
+  padding:54px 0 68px;
+  color:#86868b;
+  font-size:12px;
+  border-top:1px solid var(--line2);
+}
+.footer-inner{display:flex;justify-content:space-between;gap:30px}
+.back{color:var(--blue);font-size:13px;font-weight:600}
+.back:hover{text-decoration:underline}
+@media(max-width:900px){
+  .section-top{grid-template-columns:1fr;gap:18px}
+  .flow{grid-template-columns:repeat(2,1fr)}
+  .data-item{grid-template-columns:72px 1fr 1fr;gap:20px}
+  .data-item .business{grid-column:2 / -1}
+}
+@media(max-width:640px){
+  .nav-links{display:none}
+  .hero{padding:72px 0 66px}
+  .hero p{font-size:17px}
+  .section{padding:68px 0}
+  .flow{grid-template-columns:1fr}
+  .constraint-row{grid-template-columns:1fr}
+  .data-item{grid-template-columns:1fr;gap:14px}
+  .data-item .business{grid-column:auto}
+  .data-no{padding-top:0}
+  .footer-inner{display:block}
+  .footer-inner div+div{margin-top:10px}
+}
+</style>
+
+<style>
+/* ===== index_final visual system + restrained motion ===== */
+:root{
+  --ink:#171719;
+  --ink-2:#36363b;
+  --muted:#72727a;
+  --paper:#f7f4ee;
+  --paper-2:#fcfbf8;
+  --glass:rgba(255,255,255,.66);
+  --blue:#4d79ff;
+  --violet:#8b6cff;
+  --rose:#f08f9d;
+  --peach:#f2b978;
+  --mint:#73bda7;
+  --sage:#9fba91;
+  --line:rgba(37,37,42,.12);
+  --line2:rgba(37,37,42,.085);
+  --max:1180px;
+  --shadow:0 24px 70px rgba(45,40,35,.10);
+  --spring:cubic-bezier(.22,1,.36,1);
+}
+
+html{scroll-behavior:smooth}
+body{
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 13% 10%,rgba(240,143,157,.09),transparent 27%),
+    radial-gradient(circle at 89% 22%,rgba(77,121,255,.075),transparent 29%),
+    var(--paper-2);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","PingFang SC",
+              "Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:999;
+  opacity:.18;
+  mix-blend-mode:multiply;
+  background-image:
+    repeating-linear-gradient(0deg,rgba(69,61,50,.020) 0 1px,transparent 1px 4px),
+    repeating-linear-gradient(90deg,rgba(69,61,50,.010) 0 1px,transparent 1px 6px);
+}
+
+.wrap{width:min(var(--max),calc(100% - 48px))}
+
+.nav{
+  position:fixed;
+  height:56px;
+  z-index:80;
+  background:rgba(250,248,243,.72);
+  -webkit-backdrop-filter:saturate(150%) blur(22px);
+  backdrop-filter:saturate(150%) blur(22px);
+  border-bottom:1px solid rgba(35,35,38,.08);
+}
+.nav-inner{width:min(var(--max),calc(100% - 48px))}
+.brand{font-size:14px;font-weight:680;letter-spacing:-.015em}
+.nav-links{gap:28px;color:var(--muted)}
+.nav-links a{
+  position:relative;
+  transition:color .18s ease,transform .18s ease;
+}
+.nav-links a::after{
+  content:"";
+  position:absolute;
+  left:0;right:0;bottom:-7px;
+  height:1px;
+  background:var(--ink);
+  transform:scaleX(0);
+  transform-origin:center;
+  transition:transform .24s var(--spring);
+}
+.nav-links a:hover{color:var(--ink);transform:translateY(-1px)}
+.nav-links a:hover::after{transform:scaleX(1)}
+
+.hero{
+  padding:78px 0 30px;
+  min-height:auto;
+}
+.hero .wrap{
+  position:relative;
+  min-height:570px;
+  overflow:hidden;
+  isolation:isolate;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  padding:clamp(40px,6vw,76px);
+  border:1px solid rgba(49,48,47,.06);
+  border-radius:36px;
+  background:
+    radial-gradient(circle at 20% 16%,rgba(242,185,120,.55),transparent 24%),
+    radial-gradient(circle at 77% 17%,rgba(139,108,255,.34),transparent 29%),
+    radial-gradient(circle at 72% 76%,rgba(115,189,167,.35),transparent 31%),
+    radial-gradient(circle at 22% 81%,rgba(240,143,157,.38),transparent 30%),
+    linear-gradient(135deg,#f7e8ca 0%,#f6e4e4 30%,#e6e8f8 64%,#e0eee8 100%);
+  box-shadow:0 40px 110px rgba(72,62,50,.16),inset 0 1px rgba(255,255,255,.72);
+}
+.hero .wrap::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  opacity:.31;
+  background:
+    repeating-linear-gradient(8deg,rgba(62,55,47,.07) 0 1px,transparent 1px 7px),
+    repeating-linear-gradient(98deg,rgba(255,255,255,.24) 0 1px,transparent 1px 9px);
+  -webkit-mask-image:linear-gradient(to bottom,#000,rgba(0,0,0,.28));
+  mask-image:linear-gradient(to bottom,#000,rgba(0,0,0,.28));
+}
+.hero .wrap::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:linear-gradient(to top,rgba(248,245,238,.90) 0%,rgba(248,245,238,.28) 42%,transparent 69%);
+}
+.hero .kicker,.hero h1,.hero p,.hero-note{position:relative;z-index:3}
+.kicker{
+  margin-bottom:14px;
+  color:rgba(39,39,44,.63);
+  font-size:13px;
+  font-weight:720;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.hero h1{
+  max-width:940px;
+  margin:0 0 20px;
+  font-size:clamp(44px,6vw,78px);
+  line-height:.99;
+  letter-spacing:-.055em;
+  font-weight:730;
+  text-wrap:balance;
+}
+.hero p{
+  max-width:790px;
+  color:rgba(48,48,54,.68);
+  font-size:16px;
+  line-height:1.78;
+}
+.hero-note{
+  margin-top:22px;
+  padding:9px 13px;
+  border:1px solid rgba(35,35,39,.10);
+  background:rgba(255,255,255,.36);
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+  color:rgba(45,45,50,.69);
+  font-size:12px;
+}
+
+/* Animated hero network */
+.hero-art{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  transform:translate3d(0,0,0);
+  transition:transform .6s var(--spring);
+}
+.hero-network{width:100%;height:100%;display:block;overflow:visible}
+.network-sketch{
+  fill:none;
+  stroke:rgba(47,43,39,.22);
+  stroke-width:1.25;
+  stroke-linecap:round;
+  opacity:.72;
+}
+.network-route{
+  fill:none;
+  stroke:rgba(43,47,61,.38);
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-dasharray:7 12;
+  animation:dataRouteFlow 5.4s linear infinite;
+}
+.network-route.soft{
+  stroke:rgba(255,255,255,.76);
+  stroke-width:1.4;
+  animation-duration:7s;
+}
+.r2{animation-delay:-1.8s}
+.r3{animation-delay:-3s}
+.node-halo{
+  fill:rgba(255,255,255,.26);
+  stroke:rgba(255,255,255,.75);
+  stroke-width:1.2;
+  filter:url(#dataSoftShadow);
+}
+.node-core{fill:rgba(32,33,39,.84)}
+.node-pulse{
+  fill:none;
+  stroke:rgba(255,255,255,.96);
+  stroke-width:1.5;
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:dataPulse 3.2s ease-out infinite;
+}
+.n2 .node-pulse{animation-delay:.65s}
+.n3 .node-pulse{animation-delay:1.3s}
+.n4 .node-pulse{animation-delay:1.95s}
+.n5 .node-pulse{animation-delay:2.6s}
+.hero-node text{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC",sans-serif;
+  fill:rgba(31,31,35,.66);
+  font-size:13px;
+  font-weight:650;
+}
+.network-dot{
+  fill:rgba(41,41,46,.58);
+  animation:dataDotFloat 4s ease-in-out infinite;
+}
+.d2{animation-delay:.7s}.d3{animation-delay:1.4s}.d4{animation-delay:2.1s}
+
+@keyframes dataRouteFlow{to{stroke-dashoffset:-76}}
+@keyframes dataPulse{
+  0%{transform:scale(.72);opacity:.85}
+  75%,100%{transform:scale(1.88);opacity:0}
+}
+@keyframes dataDotFloat{
+  0%,100%{opacity:.34;transform:translateY(0)}
+  50%{opacity:.74;transform:translateY(-4px)}
+}
+
+.section{padding:108px 0}
+.section.soft{
+  background:
+    radial-gradient(circle at 84% 18%,rgba(139,108,255,.07),transparent 28%),
+    radial-gradient(circle at 8% 82%,rgba(242,185,120,.10),transparent 31%),
+    rgba(245,242,235,.58);
+  border-top:1px solid rgba(52,49,45,.06);
+  border-bottom:1px solid rgba(52,49,45,.06);
+}
+.section-top{
+  display:flex;
+  flex-direction:column;
+  gap:17px;
+  align-items:stretch;
+  margin-bottom:48px;
+}
+.eyebrow{
+  margin-bottom:10px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:720;
+  letter-spacing:.10em;
+  text-transform:uppercase;
+}
+h2{
+  font-size:clamp(31px,4.25vw,54px);
+  line-height:1.05;
+  letter-spacing:-.045em;
+  font-weight:710;
+}
+.section-top p{
+  max-width:810px;
+  color:var(--muted);
+  font-size:16px;
+  line-height:1.78;
+}
+
+/* Relationship map */
+.flow{
+  position:relative;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:14px;
+}
+.flow::before{
+  content:"";
+  position:absolute;
+  left:4%;right:4%;
+  top:50%;
+  height:1px;
+  z-index:0;
+  background:linear-gradient(90deg,
+    transparent,
+    rgba(77,121,255,.20) 13%,
+    rgba(139,108,255,.22) 36%,
+    rgba(115,189,167,.24) 67%,
+    transparent);
+  transform:scaleX(.2);
+  transform-origin:left center;
+  opacity:0;
+  transition:transform 1.3s var(--spring),opacity .6s ease;
+}
+.flow.is-visible::before{transform:scaleX(1);opacity:1}
+.flow-item{
+  position:relative;
+  z-index:1;
+  min-height:142px;
+  overflow:hidden;
+  padding:19px;
+  border:1px solid rgba(50,50,55,.09);
+  border-radius:22px;
+  background:rgba(255,255,255,.66);
+  -webkit-backdrop-filter:blur(16px);
+  backdrop-filter:blur(16px);
+  box-shadow:0 10px 34px rgba(55,48,41,.045);
+  transition:transform .28s var(--spring),box-shadow .28s var(--spring),border-color .2s ease;
+}
+.flow-item::after{
+  content:"";
+  position:absolute;
+  right:-54px;
+  bottom:-70px;
+  width:130px;height:130px;
+  border-radius:50%;
+  background:var(--wash,rgba(77,121,255,.13));
+  filter:blur(1px);
+  transition:transform .45s var(--spring);
+}
+.flow-item:nth-child(1){--wash:rgba(115,189,167,.25)}
+.flow-item:nth-child(2){--wash:rgba(77,121,255,.18)}
+.flow-item:nth-child(3){--wash:rgba(139,108,255,.18)}
+.flow-item:nth-child(4){--wash:rgba(242,185,120,.22)}
+.flow-item:nth-child(5){--wash:rgba(240,143,157,.22)}
+.flow-item:hover{
+  transform:translateY(-6px);
+  border-color:rgba(50,50,55,.14);
+  box-shadow:0 24px 60px rgba(55,48,41,.09);
+}
+.flow-item:hover::after{transform:scale(1.15)}
+.flow-item .id{
+  position:relative;z-index:1;
+  margin-bottom:38px;
+  font-size:11px;
+  font-weight:700;
+  color:#96969d;
+}
+.flow-item b,.flow-item span{position:relative;z-index:1}
+.flow-item b{font-size:16px;letter-spacing:-.015em}
+.flow-item span{font-size:11px;color:var(--muted)}
+
+.constraint-row{gap:14px;margin-top:14px}
+.constraint{
+  position:relative;
+  overflow:hidden;
+  padding:22px;
+  border:1px solid rgba(50,50,55,.09);
+  border-radius:22px;
+  background:rgba(255,255,255,.61);
+  -webkit-backdrop-filter:blur(16px);
+  backdrop-filter:blur(16px);
+  box-shadow:0 10px 32px rgba(55,48,41,.04);
+}
+.constraint:first-child{
+  border-color:rgba(240,143,157,.25);
+  background:
+    radial-gradient(circle at 92% 10%,rgba(240,143,157,.17),transparent 38%),
+    rgba(255,255,255,.61);
+}
+.constraint:last-child{
+  border-color:rgba(242,185,120,.30);
+  background:
+    radial-gradient(circle at 92% 10%,rgba(242,185,120,.19),transparent 38%),
+    rgba(255,255,255,.61);
+}
+
+/* 10 detailed data domains */
+.data-list{
+  border-top:0;
+  display:grid;
+  gap:16px;
+}
+.data-item{
+  position:relative;
+  overflow:hidden;
+  grid-template-columns:72px 1fr 1.12fr 1.28fr;
+  gap:26px;
+  padding:28px;
+  border:1px solid rgba(50,50,55,.09);
+  border-radius:26px;
+  background:rgba(255,255,255,.62);
+  -webkit-backdrop-filter:blur(18px);
+  backdrop-filter:blur(18px);
+  box-shadow:0 10px 35px rgba(55,48,41,.042);
+  transition:transform .30s var(--spring),box-shadow .30s var(--spring),border-color .2s ease;
+}
+.data-item::before{
+  content:"";
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:3px;
+  opacity:.72;
+  background:var(--theme,var(--blue));
+}
+.data-item::after{
+  content:"";
+  position:absolute;
+  width:220px;height:220px;
+  right:-110px;top:-126px;
+  border-radius:50%;
+  background:color-mix(in srgb,var(--theme,var(--blue)) 18%,transparent);
+  filter:blur(8px);
+  transition:transform .55s var(--spring);
+  pointer-events:none;
+}
+.data-item:hover{
+  transform:translateY(-5px);
+  border-color:rgba(50,50,55,.14);
+  box-shadow:0 24px 62px rgba(55,48,41,.085);
+}
+.data-item:hover::after{transform:scale(1.15) translate(-6px,6px)}
+.theme-mint{--theme:var(--mint)}
+.theme-blue{--theme:var(--blue)}
+.theme-violet{--theme:var(--violet)}
+.theme-rose{--theme:var(--rose)}
+.theme-peach{--theme:var(--peach)}
+.theme-sage{--theme:var(--sage)}
+
+.data-no{
+  width:42px;height:42px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:1px solid rgba(50,50,55,.09);
+  border-radius:50%;
+  background:rgba(255,255,255,.56);
+  color:var(--ink);
+  font-size:11px;
+  font-weight:720;
+}
+.data-name h3{
+  margin:1px 0 7px;
+  font-size:22px;
+  letter-spacing:-.025em;
+}
+.data-name p{font-size:12px}
+.col-label{
+  margin-bottom:11px;
+  color:#88888f;
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+.data-item ul{
+  padding-left:17px;
+  color:#4b4b50;
+  font-size:13px;
+  line-height:1.78;
+}
+.data-item li::marker{color:var(--theme,var(--blue))}
+
+.note{
+  margin-top:28px;
+  padding:24px 26px;
+  border:1px solid rgba(50,50,55,.09);
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 88% 20%,rgba(139,108,255,.08),transparent 30%),
+    rgba(255,255,255,.60);
+  box-shadow:0 10px 32px rgba(55,48,41,.04);
+}
+
+/* Scroll reveals */
+.reveal{
+  opacity:0;
+  transform:translateY(22px);
+  transition:
+    opacity .70s ease var(--delay,0ms),
+    transform .80s var(--spring) var(--delay,0ms);
+}
+.reveal.is-visible{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.footer{
+  padding:58px 0 70px;
+  border-top:1px solid rgba(37,37,42,.10);
+  color:#86868b;
+}
+.back{
+  color:var(--ink);
+  font-weight:650;
+  transition:transform .18s ease,color .18s ease;
+}
+.back:hover{
+  color:var(--blue);
+  text-decoration:none;
+}
+
+@media(max-width:900px){
+  .flow{grid-template-columns:repeat(2,1fr)}
+  .flow::before{display:none}
+  .data-item{grid-template-columns:64px 1fr 1fr;gap:20px}
+  .data-item .business{grid-column:2 / -1}
+}
+@media(max-width:640px){
+  .wrap,.nav-inner{width:min(var(--max),calc(100% - 28px))}
+  .hero{padding:68px 0 14px}
+  .hero .wrap{
+    min-height:520px;
+    border-radius:26px;
+    padding:30px 22px;
+  }
+  .hero-art{opacity:.72;transform:scale(1.18) translateY(-5%)}
+  .hero h1{font-size:clamp(38px,12vw,58px)}
+  .hero p{font-size:14px;line-height:1.65}
+  .section{padding:76px 0}
+  .flow{grid-template-columns:1fr}
+  .constraint-row{grid-template-columns:1fr}
+  .data-item{
+    grid-template-columns:1fr;
+    gap:13px;
+    padding:22px;
+    border-radius:22px;
+  }
+  .data-item .business{grid-column:auto}
+  .data-no{width:38px;height:38px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{
+    animation:none!important;
+    transition:none!important;
+  }
+  .reveal{opacity:1!important;transform:none!important}
+}
+</style>
+
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">供应链决策架构设计</a>
+    <nav class="nav-links">
+      <a href="#map">数据关系</a>
+      <a href="#categories">10 类数据</a>
+      <a href="index.html#decisions">D1–D8</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="wrap" id="dataHero">
+    <div class="hero-art" aria-hidden="true">
+      <svg class="hero-network" viewBox="0 0 1200 470" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <filter id="dataSoftShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#51493f" flood-opacity=".10"/>
+          </filter>
+        </defs>
+
+        <path class="network-sketch s1" d="M52 108 C190 34 320 63 438 146 S674 250 798 156 1011 64 1150 132"/>
+        <path class="network-sketch s2" d="M74 368 C206 278 346 290 470 352 S734 445 862 356 1052 282 1176 328"/>
+        <path class="network-route r1" d="M124 245 C246 154 373 161 486 226 S706 315 826 236 1025 166 1110 220"/>
+        <path class="network-route r2" d="M124 245 C216 315 336 355 466 366 S716 386 842 344 1017 279 1110 220"/>
+        <path class="network-route soft r3" d="M486 226 C584 126 714 112 826 138 S1021 163 1110 220"/>
+
+        <g class="hero-node n1" transform="translate(124 245)">
+          <circle class="node-pulse" r="26"/>
+          <circle class="node-halo" r="31"/>
+          <circle class="node-core" r="6"/>
+          <text x="-24" y="-46">Market</text>
+        </g>
+        <g class="hero-node n2" transform="translate(486 226)">
+          <circle class="node-pulse" r="26"/>
+          <circle class="node-halo" r="31"/>
+          <circle class="node-core" r="6"/>
+          <text x="-26" y="-46">Product</text>
+        </g>
+        <g class="hero-node n3" transform="translate(826 138)">
+          <circle class="node-pulse" r="26"/>
+          <circle class="node-halo" r="31"/>
+          <circle class="node-core" r="6"/>
+          <text x="-28" y="-46">Supplier</text>
+        </g>
+        <g class="hero-node n4" transform="translate(842 344)">
+          <circle class="node-pulse" r="26"/>
+          <circle class="node-halo" r="31"/>
+          <circle class="node-core" r="6"/>
+          <text x="-32" y="52">Inventory</text>
+        </g>
+        <g class="hero-node n5" transform="translate(1110 220)">
+          <circle class="node-pulse" r="26"/>
+          <circle class="node-halo" r="31"/>
+          <circle class="node-core" r="6"/>
+          <text x="-30" y="-46">Customer</text>
+        </g>
+
+        <circle class="network-dot d1" cx="306" cy="187" r="4"/>
+        <circle class="network-dot d2" cx="664" cy="214" r="4"/>
+        <circle class="network-dot d3" cx="702" cy="355" r="4"/>
+        <circle class="network-dot d4" cx="978" cy="273" r="4"/>
+      </svg>
+    </div>
+    <div class="kicker">Business Data World Model · 数据说明</div>
+    <h1>10 类数据，不是 10 张表。</h1>
+    <p>
+      这里的 10 类数据代表 10 个业务数据域。每一类下面都可以包含若干张业务表、主数据或状态记录，
+      共同描述供应链在市场、需求、产品、库存、供应、产能、物流、风险和财务上的当前状态与未来计划。
+    </p>
+    <div class="hero-note">本页只说明业务覆盖范围，不展开数据库字段与技术表结构。</div>
+  </div>
+</section>
+
+<section class="section soft" id="map">
+  <div class="wrap">
+    <div class="section-top reveal">
+      <div>
+        <div class="eyebrow">数据关系</div>
+        <h2>数据共同描述一条真实供应链。</h2>
+      </div>
+      <p>
+        市场与客户形成需求，产品与 BOM 把成品需求连接到材料和工艺；
+        供应商、采购、产能、物流与库存共同支撑供给和履约。
+        Risk / Compliance 与 Finance 作为横向约束，影响供应源、网络和资源配置。
+      </p>
+    </div>
+
+    <div class="flow">
+      <div class="flow-item reveal" style="--delay:0ms"><div class="id">01</div><b>市场 / 客户</b><span>Market / Customer</span></div>
+      <div class="flow-item reveal" style="--delay:70ms"><div class="id">02</div><b>需求 / 订单</b><span>Demand / Order</span></div>
+      <div class="flow-item reveal" style="--delay:140ms"><div class="id">03</div><b>产品 / BOM</b><span>Product / BOM / Process</span></div>
+      <div class="flow-item reveal" style="--delay:210ms"><div class="id">05–07</div><b>供应与产能</b><span>Supplier / Procurement / Capacity</span></div>
+      <div class="flow-item reveal" style="--delay:280ms"><div class="id">08 → 04</div><b>物流与库存</b><span>Logistics / Inventory</span></div>
+    </div>
+    <div class="constraint-row">
+      <div class="constraint reveal" style="--delay:80ms"><b>09 · Risk / Compliance</b>对产品、材料、Supplier Site、采购关系、工厂与物流路径设置准入、追溯和风险约束。</div>
+      <div class="constraint reveal" style="--delay:150ms"><b>10 · Finance</b>连接价格、成本、库存资金占用、收入、现金与回报，为不同供应链方案提供经济性约束。</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="categories">
+  <div class="wrap">
+    <div class="section-top reveal">
+      <div>
+        <div class="eyebrow">10 类业务数据</div>
+        <h2>每一类下面，都可以有若干张表。</h2>
+      </div>
+      <p>
+        下方列的是“这个数据域大体应该覆盖什么”，而不是要求固定使用这些表名。
+        真正实现时可以根据数据源和工具拆分，但业务边界保持一致。
+      </p>
+    </div>
+
+    <div class="data-list">
+      <article class="data-item reveal theme-mint" style="--delay:0ms">
+        <div class="data-no">01</div>
+        <div class="data-name"><h3>市场 / 客户</h3><p>Market / Customer</p></div>
+        <div><span class="col-label">典型表 / 业务对象</span><ul>
+          <li>Market / Region / Channel</li><li>Customer / Customer Segment</li><li>Customer Priority / Service Policy</li>
+        </ul></div>
+        <div class="business"><span class="col-label">主要业务内容</span><ul>
+          <li>描述产品最终卖到哪里、卖给谁，以及客户和市场的优先级。</li>
+          <li>承接区域、渠道、客户层级和服务策略，为需求承诺与履约分配提供业务边界。</li>
+        </ul></div>
+      </article>
+
+      <article class="data-item reveal theme-blue" style="--delay:55ms">
+        <div class="data-no">02</div>
+        <div class="data-name"><h3>需求 / 订单</h3><p>Demand / Order</p></div>
+        <div><span class="col-label">典型表 / 业务对象</span><ul>
+          <li>Forecast / Demand Plan</li><li>Sales Order / Customer Order</li><li>Committed Demand / Backorder</li>
+        </ul></div>
+        <div class="business"><span class="col-label">主要业务内容</span><ul>
+          <li>记录未来需求、真实订单、承诺量以及未满足需求。</li>
+          <li>未来数据以 SKU × Market / Customer × Day / Week 为主要时间粒度，驱动 D1、D2 和后续资源规划。</li>
+        </ul></div>
+      </article>
+
+      <article class="data-item reveal theme-violet" style="--delay:110ms">
+        <div class="data-no">03</div>
+        <div class="data-name"><h3>产品 / BOM / Process</h3><p>Product / BOM / Process</p></div>
+        <div><span class="col-label">典型表 / 业务对象</span><ul>
+          <li>Product / SKU Master</li><li>BOM / Material Relationship</li><li>Routing / Process / Yield</li><li>Alternative Material / Substitution</li>
+        </ul></div>
+        <div class="business"><span class="col-label">主要业务内容</span><ul>
+          <li>定义“卖一个产品需要什么材料、经过什么工艺”。</li>
+          <li>把市场需求转换成物料与产能需求，也是供应商、工厂和合规追溯之间的结构骨架。</li>
+        </ul></div>
+      </article>
+
+      <article class="data-item reveal theme-rose" style="--delay:0ms">
+        <div class="data-no">04</div>
+        <div class="data-name"><h3>库存</h3><p>Inventory</p></div>
+        <div><span class="col-label">典型表 / 业务对象</span><ul>
+          <li>On-hand Inventory</li><li>In-transit / Expected Receipt</li><li>Safety Stock / Reorder Policy</li><li>Inventory Plan / Allocation Status</li>
+        </ul></div>
+        <div class="business"><span class="col-label">主要业务内容</span><ul>
+          <li>描述原材料、WIP、成品在各节点的可用量、在途量和目标库存。</li>
+          <li>连接 MRP、生产、物流与履约，是判断缺口、补货和可承诺量的核心状态。</li>
+        </ul></div>
+      </article>
+
+      <article class="data-item reveal theme-peach" style="--delay:55ms">
+        <div class="data-no">05</div>
+        <div class="data-name"><h3>供应商 / Supplier Site</h3><p>Supplier</p></div>
+        <div><span class="col-label">典型表 / 业务对象</span><ul>
+          <li>Supplier Master</li><li>Supplier Site / Factory Site</li><li>Capability / Capacity / Lead Time Profile</li><li>Qualification / Certification Status</li>
+        </ul></div>
+        <div class="business"><span class="col-label">主要业务内容</span><ul>
+          <li>不仅记录“供应商是谁”，还要落到具体 Site、能力、供货材料与所在地区。</li>
+          <li>支撑 D3 供应源准入与 D4 采购分配，并与风险、追溯和产能状态相连。</li>
+        </ul></div>
+      </article>
+
+      <article class="data-item reveal theme-sage" style="--delay:110ms">
+        <div class="data-no">06</div>
+        <div class="data-name"><h3>采购关系</h3><p>Sourcing / Procurement</p></div>
+        <div><span class="col-label">典型表 / 业务对象</span><ul>
+          <li>Approved Source / Source List</li><li>Supplier–Material–Site Relationship</li><li>Price / MOQ / Lot Size / Lead Time</li><li>Purchase Order / Allocation Plan</li>
+        </ul></div>
+        <div class="business"><span class="col-label">主要业务内容</span><ul>
+          <li>描述“什么材料可以从哪个合格供应源采购，以及以什么商业和交付条件采购”。</li>
+          <li>承接 D3 的合格供应池，记录 D4 的采购分配和实际采购执行。</li>
+        </ul></div>
+      </article>
+
+      <article class="data-item reveal theme-blue" style="--delay:0ms">
+        <div class="data-no">07</div>
+        <div class="data-name"><h3>工厂 / 产能</h3><p>Facility / Capacity</p></div>
+        <div><span class="col-label">典型表 / 业务对象</span><ul>
+          <li>Facility / Plant / Line</li><li>Process Capacity Calendar</li><li>Production Plan / Schedule</li><li>Yield / Downtime / Available Capacity</li>
+        </ul></div>
+        <div class="business"><span class="col-label">主要业务内容</span><ul>
+          <li>描述在哪里能生产、每个工艺在什么时间有多少可用产能。</li>
+          <li>支撑 D5 生产分配，并将产能限制、良率、停机和计划完成情况反馈给库存与履约。</li>
+        </ul></div>
+      </article>
+
+      <article class="data-item reveal theme-mint" style="--delay:55ms">
+        <div class="data-no">08</div>
+        <div class="data-name"><h3>物流网络</h3><p>Logistics</p></div>
+        <div><span class="col-label">典型表 / 业务对象</span><ul>
+          <li>Warehouse / DC / Logistics Node</li><li>Lane / Route / Mode</li><li>Transit Time / Capacity / Freight Cost</li><li>Shipment Plan / Shipment Actual / ETA</li>
+        </ul></div>
+        <div class="business"><span class="col-label">主要业务内容</span><ul>
+          <li>描述货物从供应商、工厂、仓库到客户之间可以怎么移动。</li>
+          <li>支撑 D7 运输方式与路线选择，也通过 ETA、在途和中断状态影响 D6 库存与 D8 履约。</li>
+        </ul></div>
+      </article>
+
+      <article class="data-item reveal theme-rose" style="--delay:110ms">
+        <div class="data-no">09</div>
+        <div class="data-name"><h3>风险 / 合规</h3><p>Risk / Compliance</p></div>
+        <div><span class="col-label">典型表 / 业务对象</span><ul>
+          <li>Supplier / Site Risk Status</li><li>Certification / Audit / Expiry</li><li>Country / Sanction / Regulatory Rule</li><li>Traceability / Origin / Material Restriction</li>
+        </ul></div>
+        <div class="business"><span class="col-label">主要业务内容</span><ul>
+          <li>把供应商资质、原产地、制裁、强迫劳动、市场法规等作为可执行约束。</li>
+          <li>重点不是给供应商“加一个风险分数”，而是决定某个 Supplier × Site × Material × Market 组合是否允许使用。</li>
+        </ul></div>
+      </article>
+
+      <article class="data-item reveal theme-peach" style="--delay:0ms">
+        <div class="data-no">10</div>
+        <div class="data-name"><h3>财务</h3><p>Finance</p></div>
+        <div><span class="col-label">典型表 / 业务对象</span><ul>
+          <li>Price / Revenue</li><li>Material / Manufacturing / Logistics Cost</li><li>Inventory Value / Working Capital</li><li>Budget / Cash / Return Metrics</li>
+        </ul></div>
+        <div class="business"><span class="col-label">主要业务内容</span><ul>
+          <li>把采购、生产、物流、库存和销售最终连接到成本、收入、现金与资金占用。</li>
+          <li>用于比较不同决策方案的经济性，使供应链优化不只追求单一成本最低，而能衡量服务、风险与资金回报。</li>
+        </ul></div>
+      </article>
+    </div>
+
+    <div class="note reveal">
+      <strong>边界说明：</strong>
+      KPI Monitoring、Decision Log、Event / Change Log、Scenario、AI Output 等可以存在于技术日志、计算结果或页面层，
+      但不作为第 11 类供应链业务数据。它们读取或解释上述 10 类业务状态，而不是与业务状态并列。
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div><a class="back" href="index.html">← 返回项目主页</a></div>
+    <div>10 类供应链业务数据 · 中文版本</div>
+  </div>
+</footer>
+</main>
+
+<script>
+(() => {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const reveals = document.querySelectorAll('.reveal');
+  if (!reduced && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+
+    reveals.forEach((el) => observer.observe(el));
+
+    const flow = document.querySelector('.flow');
+    if (flow) {
+      const flowObserver = new IntersectionObserver((entries) => {
+        if (entries.some(e => e.isIntersecting)) {
+          flow.classList.add('is-visible');
+          flowObserver.disconnect();
+        }
+      }, { threshold: 0.3 });
+      flowObserver.observe(flow);
+    }
+  } else {
+    reveals.forEach((el) => el.classList.add('is-visible'));
+    document.querySelector('.flow')?.classList.add('is-visible');
+  }
+
+  // Very light parallax on the hero artwork, matching index_final's motion language.
+  if (!reduced) {
+    const hero = document.getElementById('dataHero');
+    const art = hero?.querySelector('.hero-art');
+    if (hero && art) {
+      let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+      const render = () => {
+        cx += (tx - cx) * .075;
+        cy += (ty - cy) * .075;
+        art.style.translate = `${cx}px ${cy}px`;
+        if (Math.abs(tx-cx) + Math.abs(ty-cy) > .05) {
+          raf = requestAnimationFrame(render);
+        } else {
+          raf = 0;
+        }
+      };
+      hero.addEventListener('pointermove', (e) => {
+        const r = hero.getBoundingClientRect();
+        tx = ((e.clientX - r.left) / r.width - .5) * 10;
+        ty = ((e.clientY - r.top) / r.height - .5) * 7;
+        if (!raf) raf = requestAnimationFrame(render);
+      });
+      hero.addEventListener('pointerleave', () => {
+        tx = 0; ty = 0;
+        if (!raf) raf = requestAnimationFrame(render);
+      });
+    }
+  }
+
+  // Highlight the current data card as the pointer moves over it.
+  document.querySelectorAll('.data-item').forEach((item) => {
+    item.addEventListener('pointermove', (e) => {
+      const r = item.getBoundingClientRect();
+      item.style.setProperty('--mx', `${((e.clientX-r.left)/r.width)*100}%`);
+      item.style.setProperty('--my', `${((e.clientY-r.top)/r.height)*100}%`);
+    });
+  });
+})();
+</script>
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"45c2bf8136a245cd97f1c2e9a96c0730"}' crossorigin="anonymous"></script>
+</body>
+</html>
