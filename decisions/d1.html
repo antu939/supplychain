@@ -1,0 +1,440 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>D1 需求承诺｜供应链决策架构设计</title><meta name="description" content="面对预测与订单，公司决定实际承接多少需求，并确定不同市场、渠道与客户的保障优先级。"><style>
+:root{--text:#1d1d1f;--muted:#6e6e73;--light:#f5f5f7;--line:#d2d2d7;--line2:#e8e8ed;--blue:#0066cc;--navy:#173f67;--blue-soft:#eef5ff;--green:#267a4b;--green-soft:#edf8f1;--red:#b33a32;--red-soft:#fff0ef;--max:1180px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6}a{color:inherit;text-decoration:none}
+.nav{position:sticky;top:0;z-index:20;height:50px;background:rgba(255,255,255,.9);backdrop-filter:saturate(180%) blur(18px);border-bottom:1px solid rgba(0,0,0,.08)}.nav-inner{width:min(var(--max),calc(100% - 40px));height:100%;margin:auto;display:flex;align-items:center;justify-content:space-between}.brand{font-size:14px;font-weight:650}.nav-links{display:flex;gap:18px;font-size:12px;color:var(--muted)}.nav-links a:hover,.nav-links a.current{color:var(--text)}
+.wrap{width:min(var(--max),calc(100% - 40px));margin:auto}.hero{padding:76px 0 42px}.crumb{font-size:12px;color:var(--muted);margin-bottom:20px}.crumb a{color:var(--blue)}.hero .kicker{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px}.hero h1{margin:0;max-width:900px;font-size:clamp(42px,5vw,62px);line-height:1.07;letter-spacing:-.045em}.hero p{max-width:820px;margin:22px 0 0;color:var(--muted);font-size:18px;line-height:1.72}
+.section{padding:74px 0}.section.soft{background:var(--light)}.section-head{margin-bottom:34px}.section-no{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:9px}h2{margin:0;font-size:clamp(30px,3.7vw,44px);line-height:1.12;letter-spacing:-.035em}.section-head p{margin:0;color:var(--muted);font-size:14px;line-height:1.75}
+.diagram-shell{background:#fff;border:1px solid var(--line2);border-radius:26px;padding:14px;overflow:hidden}.diagram-scroll{overflow-x:auto;overflow-y:hidden}.decision-svg{display:block;width:100%;min-width:1120px;height:auto}.diagram-note{border-top:1px solid var(--line2);margin-top:4px;padding:14px 5px 2px;font-size:12px;color:var(--muted)}.diagram-note strong{color:var(--text);font-weight:650}
+.summary-card{padding:28px;border:1px solid var(--line2);border-radius:22px;background:#fff}.summary-card strong{font-size:20px;letter-spacing:-.02em}.summary-card p{margin:12px 0 0;color:var(--muted);font-size:14px;line-height:1.75}
+.io-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.io-panel{border:1px solid var(--line2);border-radius:22px;background:#fff;overflow:hidden}.io-title{padding:20px 22px 16px;font-size:17px;font-weight:700;border-bottom:1px solid var(--line2)}.io-list{padding:4px 22px}.io-item{padding:17px 0;border-bottom:1px solid var(--line2)}.io-item:last-child{border-bottom:none}.io-item b{display:block;font-size:13px;margin-bottom:5px}.io-item span{display:block;color:var(--muted);font-size:12.5px;line-height:1.65}.writeback{margin-top:5px;color:#456178!important}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.kpi-card{border:1px solid #cfe3d5;background:var(--green-soft);border-radius:20px;padding:23px}.kpi-card h3{margin:0 0 13px;font-size:17px;color:#185f39}.formula{background:rgba(255,255,255,.76);border-radius:12px;padding:10px 12px;margin-bottom:13px;font-size:12px;color:#315e42;line-height:1.55}.kpi-card p{margin:0;color:#3f614b;font-size:12.5px;line-height:1.7}
+.last-grid{display:grid;grid-template-columns:1.1fr .8fr .9fr;gap:14px}.last-card{border:1px solid var(--line2);background:#fff;border-radius:20px;padding:23px}.last-card h3{margin:0 0 11px;font-size:17px}.last-card p{margin:0;color:var(--muted);font-size:12.5px;line-height:1.7}.example{margin-top:13px;padding:14px 15px;border-radius:14px;background:#fafafa;border:1px solid var(--line2);font-size:12px;line-height:1.7;white-space:pre-line;color:#44444a}.action-line{margin-top:16px;padding:14px 16px;border-radius:14px;background:var(--red-soft);border:1px solid #ecc9c6;color:#8e2d28;font-size:12.5px;line-height:1.65}
+.footer{padding:44px 0 58px;border-top:1px solid var(--line2);color:#8a8a8f;font-size:12px}.footer-inner{display:flex;justify-content:space-between;gap:20px}.pager{display:flex;gap:9px}.pager a{padding:7px 10px;border:1px solid var(--line2);border-radius:999px;background:#fff}
+@media(max-width:900px){.io-grid,.last-grid{grid-template-columns:1fr;gap:18px}.kpi-grid{grid-template-columns:1fr}}@media(max-width:680px){.nav-links{display:none}.hero{padding-top:58px}.section{padding:60px 0}.diagram-shell{padding:8px;border-radius:20px}.footer-inner{display:block}.pager{margin-top:10px}}
+</style>
+<style>
+
+/* ===== Visual alignment with index_final ===== */
+:root{
+  --ink:#171719;
+  --ink-2:#36363b;
+  --muted:#72727a;
+  --paper:#f7f4ee;
+  --paper-2:#fcfbf8;
+  --glass:rgba(255,255,255,.66);
+  --wash-blue:#4d79ff;
+  --wash-violet:#8b6cff;
+  --wash-rose:#f08f9d;
+  --wash-peach:#f2b978;
+  --wash-mint:#73bda7;
+  --wash-sage:#9fba91;
+
+  /* remap existing page variables without changing page content */
+  --text:var(--ink);
+  --light:rgba(245,242,235,.58);
+  --line:rgba(37,37,42,.12);
+  --line2:rgba(37,37,42,.09);
+  --blue:#4d79ff;
+  --blue-soft:rgba(77,121,255,.09);
+  --green:#4d927e;
+  --green-soft:rgba(115,189,167,.14);
+  --red:#b85f68;
+  --red-soft:rgba(240,143,157,.13);
+  --gold:#8d7139;
+  --gold-soft:rgba(242,185,120,.16);
+  --amber:#8d7139;
+  --amber-soft:rgba(242,185,120,.16);
+  --max:1180px;
+}
+html{scroll-behavior:smooth}
+body{
+  color:var(--ink)!important;
+  background:
+    radial-gradient(circle at 14% 10%, rgba(240,143,157,.08), transparent 27%),
+    radial-gradient(circle at 88% 22%, rgba(77,121,255,.07), transparent 30%),
+    var(--paper-2)!important;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","PingFang SC",
+              "Microsoft YaHei","Helvetica Neue",Arial,sans-serif!important;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.5;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:999;
+  opacity:.17;
+  mix-blend-mode:multiply;
+  background-image:
+    repeating-linear-gradient(0deg,rgba(69,61,50,.020) 0 1px,transparent 1px 4px),
+    repeating-linear-gradient(90deg,rgba(69,61,50,.010) 0 1px,transparent 1px 6px);
+}
+.wrap{width:min(var(--max),calc(100% - 48px))!important;margin:auto}
+
+.nav{
+  position:fixed!important;
+  top:0;left:0;right:0;
+  z-index:80!important;
+  height:56px!important;
+  background:rgba(250,248,243,.72)!important;
+  -webkit-backdrop-filter:saturate(150%) blur(22px);
+  backdrop-filter:saturate(150%) blur(22px)!important;
+  border-bottom:1px solid rgba(35,35,38,.08)!important;
+}
+.nav-inner{
+  width:min(var(--max),calc(100% - 48px))!important;
+  height:100%;margin:auto;
+}
+.brand{font-size:14px!important;font-weight:680!important;letter-spacing:-.015em}
+.nav-links,.back{color:var(--muted)!important}
+.nav-links a,.back{transition:color .18s ease,transform .18s ease}
+.nav-links a:hover,.nav-links a.current,.back:hover{
+  color:var(--ink)!important;
+  transform:translateY(-1px);
+}
+
+.hero{
+  padding:78px 0 30px!important;
+  background:transparent!important;
+}
+.hero .wrap{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  border:1px solid rgba(49,48,47,.06);
+  border-radius:36px;
+  padding:clamp(42px,6vw,76px)!important;
+  min-height:390px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  background:
+    radial-gradient(circle at 20% 16%, rgba(242,185,120,.52), transparent 25%),
+    radial-gradient(circle at 77% 17%, rgba(139,108,255,.28), transparent 30%),
+    radial-gradient(circle at 72% 78%, rgba(115,189,167,.30), transparent 31%),
+    radial-gradient(circle at 22% 82%, rgba(240,143,157,.32), transparent 30%),
+    linear-gradient(135deg,#f7e8ca 0%,#f6e4e4 30%,#e6e8f8 64%,#e0eee8 100%);
+  box-shadow:0 36px 100px rgba(72,62,50,.15),inset 0 1px rgba(255,255,255,.70);
+}
+.hero .wrap::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  opacity:.27;
+  background:
+    repeating-linear-gradient(8deg,rgba(62,55,47,.065) 0 1px,transparent 1px 7px),
+    repeating-linear-gradient(98deg,rgba(255,255,255,.23) 0 1px,transparent 1px 9px);
+}
+.hero .wrap::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:linear-gradient(to top,rgba(248,245,238,.70) 0%,rgba(248,245,238,.16) 48%,transparent 74%);
+}
+.crumb{
+  margin-bottom:16px!important;
+  color:rgba(48,48,54,.58)!important;
+}
+.crumb a{color:rgba(48,48,54,.76)!important}
+.hero .kicker{
+  margin-bottom:13px!important;
+  color:rgba(39,39,44,.62)!important;
+  font-size:13px!important;
+  font-weight:720!important;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.hero h1{
+  margin-top:0!important;
+  color:var(--ink)!important;
+  font-size:clamp(43px,5.8vw,76px)!important;
+  line-height:1!important;
+  letter-spacing:-.052em!important;
+  font-weight:730!important;
+  white-space:normal!important;
+  text-wrap:balance;
+}
+.hero p{
+  max-width:820px!important;
+  color:rgba(48,48,54,.68)!important;
+  font-size:16px!important;
+  line-height:1.75!important;
+}
+
+.section{padding:104px 0!important;position:relative}
+.section.soft{
+  background:
+    radial-gradient(circle at 84% 18%,rgba(139,108,255,.065),transparent 28%),
+    radial-gradient(circle at 8% 82%,rgba(242,185,120,.09),transparent 31%),
+    rgba(245,242,235,.58)!important;
+  border-top:1px solid rgba(52,49,45,.06);
+  border-bottom:1px solid rgba(52,49,45,.06);
+}
+.section-head,.section-top{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:16px!important;
+  margin-bottom:44px!important;
+}
+.section-no,.eyebrow{
+  margin-bottom:9px!important;
+  color:var(--muted)!important;
+  font-size:12px!important;
+  font-weight:720!important;
+  letter-spacing:.10em;
+  text-transform:uppercase;
+}
+h2{
+  color:var(--ink)!important;
+  font-size:clamp(31px,4.15vw,54px)!important;
+  line-height:1.05!important;
+  letter-spacing:-.045em!important;
+  font-weight:710!important;
+  white-space:normal!important;
+}
+.section-head p,.section-top p{
+  max-width:820px!important;
+  margin:0!important;
+  color:var(--muted)!important;
+  font-size:15px!important;
+  line-height:1.78!important;
+}
+
+/* Large glass surfaces */
+.diagram-shell,
+.demo,
+.table-shell,
+.kpi-overview,
+.compute-shell,
+.compare-shell,
+.summary-card,
+.io-panel,
+.last-card,
+.stage-card,
+.impact-card,
+.method-card,
+.action-card,
+.big-number,
+.change-card,
+.skip-card,
+.run-card,
+.option,
+.recommend-copy,
+.apply-card,
+.alert,
+.range-box{
+  border:1px solid rgba(50,50,55,.09)!important;
+  background:rgba(255,255,255,.66)!important;
+  -webkit-backdrop-filter:blur(18px);
+  backdrop-filter:blur(18px);
+  box-shadow:0 10px 35px rgba(55,48,41,.045);
+}
+
+/* Main surface radii */
+.diagram-shell,.demo,.kpi-overview,.compute-shell,.compare-shell,.table-shell{
+  border-radius:30px!important;
+}
+.summary-card,.io-panel,.last-card,.impact-card,.method-card,.action-card,
+.big-number,.change-card,.skip-card,.run-card,.option,.recommend-copy,.apply-card,.alert{
+  border-radius:24px!important;
+}
+
+/* Small inner cards */
+.io-item,
+.source,
+.recognize > div,
+.data-item,
+.decision,
+.flow-item,
+.calc,
+.skip-item,
+.update,
+.rule .n,
+.example,
+.note,
+.sum,
+.formula{
+  border-color:rgba(50,50,55,.08)!important;
+}
+.source,
+.recognize > div,
+.data-item,
+.decision,
+.flow-item,
+.calc,
+.skip-item,
+.update,
+.example,
+.note,
+.sum{
+  background:rgba(250,248,243,.72)!important;
+}
+
+/* Semantic pastel washes in the same homepage palette */
+.kpi-card,.review-card,.recommend-main{
+  background:
+    radial-gradient(circle at 88% 10%,rgba(115,189,167,.23),transparent 42%),
+    rgba(255,255,255,.64)!important;
+  border:1px solid rgba(115,189,167,.26)!important;
+}
+.lang,.assumption{
+  background:
+    radial-gradient(circle at 88% 8%,rgba(77,121,255,.16),transparent 45%),
+    rgba(255,255,255,.62)!important;
+  border-color:rgba(77,121,255,.20)!important;
+}
+.alert-number,.shortage,.root,.action-line{
+  background:
+    radial-gradient(circle at 90% 5%,rgba(240,143,157,.21),transparent 48%),
+    rgba(255,255,255,.62)!important;
+  border-color:rgba(240,143,157,.28)!important;
+}
+.apply-note{
+  background:
+    radial-gradient(circle at 88% 0%,rgba(242,185,120,.23),transparent 52%),
+    rgba(255,255,255,.60)!important;
+  border-color:rgba(242,185,120,.31)!important;
+}
+.option.recommended,.stage-card.focus{
+  border-color:rgba(77,121,255,.28)!important;
+  box-shadow:0 18px 42px rgba(63,65,86,.07)!important;
+}
+
+/* Tables */
+table{color:var(--ink)}
+th,
+.kpi-table th,.change-table th,.plan-table th,.compare-table th,.attrib-table th{
+  color:#77777d!important;
+  background:rgba(247,244,238,.72)!important;
+  border-color:rgba(50,50,55,.08)!important;
+}
+td,
+.kpi-table td,.change-table td,.plan-table td,.compare-table td,.attrib-table td{
+  border-color:rgba(50,50,55,.08)!important;
+}
+.kpi-highlight,.compare.bad,.compare.watch,.recommend-col{
+  background:rgba(255,255,255,.52)!important;
+}
+
+/* Buttons / pills */
+.btn,.pager a,.status-ok{
+  border:1px solid rgba(35,35,39,.11)!important;
+  background:rgba(255,255,255,.52)!important;
+  color:rgba(45,45,50,.72)!important;
+  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(12px);
+  transition:transform .2s ease,border-color .2s ease,background .2s ease;
+}
+.btn:hover,.pager a:hover{
+  transform:translateY(-1px);
+  border-color:rgba(50,50,55,.18)!important;
+  background:rgba(255,255,255,.76)!important;
+}
+.dot{background:var(--wash-mint)!important;box-shadow:0 0 0 6px rgba(115,189,167,.13)!important}
+
+/* More depth on repeated cards */
+.summary-card,.kpi-card,.last-card,.compare,.option,.impact-card,.method-card,.action-card,
+.source,.data-item,.decision,.stage-card{
+  transition:transform .26s cubic-bezier(.22,1,.36,1),
+             box-shadow .26s cubic-bezier(.22,1,.36,1),
+             border-color .2s ease;
+}
+.summary-card:hover,.kpi-card:hover,.last-card:hover,.compare:hover,.option:hover,
+.impact-card:hover,.method-card:hover,.action-card:hover,.source:hover,.data-item:hover,.decision:hover{
+  transform:translateY(-4px);
+  box-shadow:0 20px 48px rgba(55,48,41,.075);
+  border-color:rgba(50,50,55,.14)!important;
+}
+
+/* Detail-page diagram tones: quieter, closer to the homepage network */
+.decision-svg{filter:saturate(.78) contrast(.985)}
+.w{stroke:rgba(72,73,81,.45)!important}
+.wm{stroke:rgba(54,54,60,.65)!important}
+.wg{stroke:rgba(77,146,126,.76)!important}
+.wr{stroke:rgba(184,95,104,.76)!important}
+
+.footer{
+  padding:58px 0 70px!important;
+  color:#86868b!important;
+  font-size:12px!important;
+  border-top:1px solid rgba(37,37,42,.10)!important;
+  background:transparent!important;
+}
+
+@media(max-width:900px){
+  .wrap,.nav-inner{width:min(var(--max),calc(100% - 32px))!important}
+  .hero .wrap{min-height:350px;border-radius:28px;padding:38px 30px!important}
+  .section{padding:78px 0!important}
+}
+@media(max-width:640px){
+  .wrap,.nav-inner{width:min(var(--max),calc(100% - 28px))!important}
+  .hero{padding:68px 0 14px!important}
+  .hero .wrap{min-height:330px;border-radius:26px;padding:32px 22px!important}
+  .hero h1{font-size:clamp(38px,11.5vw,56px)!important}
+  .hero p{font-size:14px!important;line-height:1.65!important}
+  .section{padding:72px 0!important}
+  .diagram-shell,.demo,.kpi-overview,.compute-shell,.compare-shell,.table-shell{
+    border-radius:22px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+
+
+/* Decision page component alignment */
+.diagram-shell{padding:24px!important;box-shadow:0 24px 70px rgba(45,40,35,.09)!important}
+.diagram-note{
+  border-top:1px solid rgba(50,50,55,.08)!important;
+  color:var(--muted)!important;
+  padding-top:16px!important;
+}
+.summary-card{padding:28px!important}
+.io-title{border-color:rgba(50,50,55,.08)!important}
+.io-item{border-color:rgba(50,50,55,.08)!important}
+.kpi-card{
+  border-radius:22px!important;
+  padding:24px!important;
+  box-shadow:0 10px 32px rgba(55,48,41,.04);
+}
+.kpi-card h3{color:#326c5a!important}
+.formula{background:rgba(255,255,255,.56)!important;color:#4f6f64!important}
+.last-card{padding:24px!important}
+.action-line{border-radius:16px!important;color:#8f4e56!important}
+.pager a{border-radius:999px!important}
+
+</style>
+</head><body>
+<header class="nav"><div class="nav-inner"><a class="brand" href="../index.html">供应链决策架构设计</a><nav class="nav-links"><a href="../index.html#decisions">决策网络</a><a class="current" href="d1.html">D1</a><a class="" href="d2.html">D2</a><a class="" href="d3.html">D3</a></nav></div></header>
+<main>
+<section class="hero"><div class="wrap"><div class="crumb"><a href="../index.html">首页</a> / 决策详情 / D1</div><div class="kicker">D1</div><h1>需求承诺</h1><p>面对预测与订单，公司决定实际承接多少需求，并确定不同市场、渠道与客户的保障优先级。</p></div></section>
+<section class="section soft"><div class="wrap"><div class="section-head"><div><div class="section-no">01</div><h2>决策流</h2></div></div><div class="diagram-shell"><div class="diagram-scroll"><svg class="decision-svg" viewBox="0 0 1460 720" role="img" aria-label="D1 需求承诺 决策架构图">
+<defs>
+  <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r="1.05" fill="#d8dee6" opacity=".62"/></pattern>
+  <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#536f8b"/></marker>
+  <marker id="arrg" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2f8b55"/></marker>
+  <marker id="arrr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#bf4137"/></marker>
+</defs>
+<style>
+.w{fill:none;stroke:#8798aa;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}.wm{stroke:#4a6d8e;stroke-width:2.2}.wg{stroke:#2f8b55;stroke-dasharray:6 6}.wr{stroke:#bf4137}
+.lab{font-size:10.5px;fill:#7a8189;font-weight:650}.it{font-size:13px;fill:#263c52;font-weight:700}.is{font-size:10.5px;fill:#718091}.dt{font-size:22px;fill:#fff;font-weight:760}.ds{font-size:11px;fill:#dbe8f4}.ot{font-size:14px;fill:#174f94;font-weight:760}.os{font-size:10.5px;fill:#5a7698}.nt{font-size:14px;fill:#fff;font-weight:760}.ns{font-size:10.5px;fill:#dbe7f2}.kt{font-size:13px;fill:#176137;font-weight:760}.ft{font-size:12px;fill:#176137;font-weight:700}.at{font-size:15px;fill:#a62e28;font-weight:800}.as{font-size:10.5px;fill:#9a5f5a}
+</style>
+<rect x="0" y="0" width="1460" height="720" rx="18" fill="url(#grid)"/><text x="40" y="50" class="lab" text-anchor="start">输入状态</text><text x="485" y="50" class="lab" text-anchor="start">决策</text><text x="850" y="50" class="lab" text-anchor="start">输出</text><text x="1210" y="50" class="lab" text-anchor="start">后续决策</text><g><rect x="40" y="100" width="260" height="58" rx="14" fill="#f4f7fa" stroke="#d5dee7"/><text x="56" y="124" class="it" text-anchor="start">预测结果</text><text x="56" y="143" class="is" text-anchor="start">未来可能卖多少</text></g><path class="w" d="M300 129 H355"/><g><rect x="40" y="166" width="260" height="58" rx="14" fill="#f4f7fa" stroke="#d5dee7"/><text x="56" y="190" class="it" text-anchor="start">需求 / 订单</text><text x="56" y="209" class="is" text-anchor="start">订单、真实需求、历史销量</text></g><path class="w" d="M300 195 H355"/><g><rect x="40" y="232" width="260" height="58" rx="14" fill="#f4f7fa" stroke="#d5dee7"/><text x="56" y="256" class="it" text-anchor="start">市场 / 客户</text><text x="56" y="275" class="is" text-anchor="start">客户等级、服务承诺、优先级</text></g><path class="w" d="M300 261 H355"/><g><rect x="40" y="298" width="260" height="58" rx="14" fill="#f4f7fa" stroke="#d5dee7"/><text x="56" y="322" class="it" text-anchor="start">库存</text><text x="56" y="341" class="is" text-anchor="start">可用成品、可承诺量、在途</text></g><path class="w" d="M300 327 H355"/><g><rect x="40" y="364" width="260" height="58" rx="14" fill="#f4f7fa" stroke="#d5dee7"/><text x="56" y="388" class="it" text-anchor="start">设施 / 产能</text><text x="56" y="407" class="is" text-anchor="start">粗粒度可用供给能力</text></g><path class="w" d="M300 393 H355"/><g><rect x="40" y="430" width="260" height="58" rx="14" fill="#f4f7fa" stroke="#d5dee7"/><text x="56" y="454" class="it" text-anchor="start">资金与经济性</text><text x="56" y="473" class="is" text-anchor="start">售价、利润、预算约束</text></g><path class="w" d="M300 459 H355"/><path class="w" d="M355 129 V459"/><path class="w wm" d="M355 280 H485" marker-end="url(#arr)"/><g><rect x="479" y="214" width="312" height="132" rx="25" fill="none" stroke="#b9daf9" stroke-width="7" opacity=".55"/><rect x="485" y="220" width="300" height="120" rx="20" fill="#173f67" stroke="#2f7fe8" stroke-width="2.2"/><text x="635" y="270" class="dt" text-anchor="middle">D1 需求承诺</text><text x="635" y="308" class="ds" text-anchor="middle">决定公司准备承接多少需求</text></g><g><rect x="850" y="120" width="270" height="78" rx="18" fill="#eef5ff" stroke="#6fa6eb" stroke-width="1.7"/><text x="985" y="151" class="ot" text-anchor="middle">已承诺需求量</text><text x="985" y="178" class="os" text-anchor="middle">写回：需求 / 订单</text></g><path class="w wm" d="M785 280 H820 V159 H850" marker-end="url(#arr)"/><g><rect x="1210" y="126" width="220" height="66" rx="14" fill="#315b82" stroke="#173f67" stroke-width="1.5"/><text x="1320" y="153" class="nt" text-anchor="middle">D2 需求拆解</text><text x="1320" y="175" class="ns" text-anchor="middle">继续拆成物料与产能需求</text></g><path class="w wm" d="M1120 159 H1180 V159 H1210" marker-end="url(#arr)"/><g><rect x="850" y="240" width="270" height="78" rx="18" fill="#eef5ff" stroke="#6fa6eb" stroke-width="1.7"/><text x="985" y="271" class="ot" text-anchor="middle">市场 / 渠道优先级</text><text x="985" y="298" class="os" text-anchor="middle">写回：需求 / 订单</text></g><path class="w wm" d="M785 280 H820 V279 H850" marker-end="url(#arr)"/><g><rect x="1210" y="246" width="220" height="66" rx="14" fill="#315b82" stroke="#173f67" stroke-width="1.5"/><text x="1320" y="273" class="nt" text-anchor="middle">D8 履约分配</text><text x="1320" y="295" class="ns" text-anchor="middle">缺货时决定优先给谁</text></g><path class="w wm" d="M1120 279 H1180 V279 H1210" marker-end="url(#arr)"/><g><rect x="850" y="405" width="270" height="86" rx="22" fill="#fff0ef" stroke="#c44339" stroke-width="2"/><text x="985" y="441" class="at" text-anchor="middle">确认需求计划</text><text x="985" y="469" class="as" text-anchor="middle">确认承诺量与市场 / 渠道优先级</text></g><path class="w wr" d="M785 304 H820 V448 H850" marker-end="url(#arrr)"/><g><rect x="340" y="585" width="235" height="76" rx="18" fill="#edf8f1" stroke="#45a269" stroke-width="1.6"/><text x="457.5" y="628" class="kt" text-anchor="middle">需求覆盖率</text></g><path class="w wg" d="M457.5 560 V585" marker-end="url(#arrg)"/><g><rect x="615" y="585" width="235" height="76" rx="18" fill="#edf8f1" stroke="#45a269" stroke-width="1.6"/><text x="732.5" y="628" class="kt" text-anchor="middle">承诺兑现率</text></g><path class="w wg" d="M732.5 560 V585" marker-end="url(#arrg)"/><g><rect x="890" y="585" width="235" height="76" rx="18" fill="#edf8f1" stroke="#45a269" stroke-width="1.6"/><text x="1007.5" y="628" class="kt" text-anchor="middle">未满足需求 / 销售损失</text></g><path class="w wg" d="M1007.5 560 V585" marker-end="url(#arrg)"/><path class="w wg" d="M457.5 560 H1007.5"/><path class="w wg" d="M635 560 V517" marker-end="url(#arrg)"/><g><rect x="505" y="455" width="260" height="62" rx="16" fill="#edf8f1" stroke="#45a269" stroke-width="1.5"/><text x="635.0" y="492" class="ft" text-anchor="middle">异常 → 诊断 → 触发</text></g><path class="w wg" d="M635.0 455 V390 H635 V340" marker-end="url(#arrg)"/></svg></div><div class="diagram-note"><strong>预测与业务状态 → D1 → 已承诺需求量 → D2；市场 / 渠道优先级 → D8；实际履约结果再反向评价 D1。</strong></div></div></div></section>
+<section class="section"><div class="wrap"><div class="section-head"><div><div class="section-no">02</div><h2>这个决策是做什么的</h2></div></div><div class="summary-card"><strong>D1 决定“卖多少”。</strong><p>它把“未来可能卖多少”变成“公司准备按多少需求组织供应链资源”。D1 不负责拆物料、不决定向谁采购，也不负责最终客户分货。</p></div></div></section>
+<section class="section soft"><div class="wrap"><div class="section-head"><div><div class="section-no">03</div><h2>输入与输出</h2></div></div><div class="io-grid"><div class="io-panel"><div class="io-title">输入</div><div class="io-list"><div class="io-item"><b>预测结果 + 需求 / 订单</b><span>读取预测、真实订单、真实需求与历史销量，判断未来可能需要承接多少需求。</span></div><div class="io-item"><b>市场 / 客户</b><span>读取市场、渠道、客户等级、服务承诺与优先级，判断哪些需求更重要。</span></div><div class="io-item"><b>库存 + 设施 / 产能</b><span>读取短期可用成品和粗粒度供给能力，判断当前大致能支撑多少需求。</span></div><div class="io-item"><b>资金与经济性</b><span>读取售价、利润与预算约束，判断不同需求的经济价值与资金边界。</span></div></div></div><div class="io-panel"><div class="io-title">输出</div><div class="io-list"><div class="io-item"><b>已承诺需求量</b><span>产品 × 市场 × 渠道 × 日 / 周 × 数量。</span><span class="writeback">写回：需求 / 订单；后续：D2 需求拆解</span></div><div class="io-item"><b>市场 / 渠道优先级</b><span>产品 × 市场 × 渠道 × 优先级。</span><span class="writeback">写回：需求 / 订单；后续：D8 履约分配</span></div></div></div></div><div class="action-line"><strong>实际动作：</strong>确认需求计划，并正式确定各市场 / 渠道准备承接的数量与优先级。</div></div></section>
+<section class="section"><div class="wrap"><div class="section-head"><div><div class="section-no">04</div><h2>KPI：怎么算，有什么用</h2></div></div><div class="kpi-grid"><div class="kpi-card"><h3>需求覆盖率</h3><div class="formula">已承诺需求量 ÷ 预测需求量</div><p><strong>用途：</strong>看公司准备覆盖预测需求的多少；偏低时说明主动压缩了部分需求。</p></div><div class="kpi-card"><h3>承诺兑现率</h3><div class="formula">实际履约量 ÷ 已承诺需求量</div><p><strong>用途：</strong>看已经承诺的计划最后兑现多少；偏低时继续向采购、生产、库存、物流和履约环节追原因。</p></div><div class="kpi-card"><h3>未满足需求 / 销售损失</h3><div class="formula">真实需求量 − 实际履约量（小于 0 时按 0 计）</div><p><strong>用途：</strong>看最终有多少真实需求没有满足，以及由此带来的潜在收入损失。</p></div></div></div></section>
+<section class="section soft"><div class="wrap"><div class="section-head"><div><div class="section-no">05</div><h2>例子、适合算法与重新运行条件</h2></div></div><div class="last-grid"><div class="last-card"><h3>例子</h3><p>把预测、承诺和实际结果分开看：</p><div class="example">预测 10 万
+→ D1 承诺 9 万
+→ 真实需求 9.6 万
+→ 实际履约 8.7 万
+
+需求覆盖率 = 90%
+承诺兑现率 = 96.7%
+未满足需求 = 0.9 万</div></div><div class="last-card"><h3>适合的算法</h3><p>优先级规则；当需求、供给、利润和资金等约束需要一起权衡时，可用简单线性规划。</p></div><div class="last-card"><h3>什么时候重新运行</h3><p>预测明显变化；订单突增或取消；供给明显不足；关键市场或客户优先级变化。</p></div></div></div></section>
+</main><footer class="footer"><div class="wrap footer-inner"><div>D1 · 需求承诺</div><div class="pager"><a href="../index.html#decisions">返回决策网络</a><a href="d2.html">下一个 →</a></div></div></footer></body></html>
